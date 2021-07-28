@@ -6,6 +6,6 @@
     "sourceMap": true,
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*.ts", "src/index.test.ts"],
+  "include": ["src/**/*.ts", "src/server.test.ts"],
   "exclude": ["node_modules", ".vscode"]
 }
