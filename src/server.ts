@@ -7,23 +7,26 @@ interface ServerConfig {
 
 class Server {
   private httpServer: HttpServer;
+  private ioServer: IOServer;
   private port: number;
 
   constructor({ port }: ServerConfig) {
     this.port = port;
-  }
-
-  public start(): void {
     this.httpServer = createServer();
-    const io = new IOServer(this.httpServer, {
+    this.ioServer = new IOServer(this.httpServer, {
       //
     });
+    this.setupIOServer();
+  }
 
-    io.on('connection', (socket: Socket) => {
+  private setupIOServer(): void {
+    this.ioServer.on('connection', (socket: Socket) => {
       socket.emit('hello', 'world');
       // ToDo! Find if socket close required
     });
+  }
 
+  public start(): void {
     this.httpServer.listen(this.port);
   }
 
