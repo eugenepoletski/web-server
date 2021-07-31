@@ -1,26 +1,35 @@
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server as IOServer, Socket } from 'socket.io';
 
-let httpServer;
-
-interface StartOptions {
+interface ServerConfig {
   port: number;
 }
 
-export const start = ({ port }: StartOptions): void => {
-  httpServer = createServer();
-  const io = new Server(httpServer, {
-    // ...
-  });
+class Server {
+  private httpServer: any;
+  private port: number;
 
-  io.on('connection', (socket: Socket) => {
-    socket.emit('hello', 'world');
-    // ToDo! Learn if socket close required
-  });
+  constructor({ port }: ServerConfig) {
+    this.port = port;
+  }
 
-  httpServer.listen(port);
-};
+  public start(): void {
+    this.httpServer = createServer();
+    const io = new IOServer(this.httpServer, {
+      //
+    });
 
-export const stop = (): void => {
-  httpServer.close();
-};
+    io.on('connection', (socket: Socket) => {
+      socket.emit('hello', 'world');
+      // ToDo! Find if socket close required
+    });
+
+    this.httpServer.listen(this.port);
+  }
+
+  public stop(): void {
+    this.httpServer.close();
+  }
+}
+
+export default Server;
