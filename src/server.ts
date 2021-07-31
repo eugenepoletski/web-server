@@ -5,7 +5,7 @@ interface ServerConfig {
   port: number;
 }
 
-class Server {
+export class Server {
   private httpServer: HttpServer;
   private ioServer: IOServer;
   private port: number;
@@ -34,5 +34,3 @@ class Server {
     this.httpServer.close();
   }
 }
-
-export default Server;

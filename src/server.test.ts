@@ -1,5 +1,5 @@
 import Client from 'socket.io-client';
-import Server from './server';
+import { Server } from './server';
 
 describe('my first server test', () => {
   test('should work', (done) => {
