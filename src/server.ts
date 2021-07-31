@@ -1,4 +1,4 @@
-import { createServer } from 'http';
+import { createServer, Server as HttpServer } from 'http';
 import { Server as IOServer, Socket } from 'socket.io';
 
 interface ServerConfig {
@@ -6,7 +6,7 @@ interface ServerConfig {
 }
 
 class Server {
-  private httpServer: any;
+  private httpServer: HttpServer;
   private port: number;
 
   constructor({ port }: ServerConfig) {
