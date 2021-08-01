@@ -26,8 +26,10 @@ export class Server {
     });
   }
 
-  public start(): void {
-    this.httpServer.listen(this.port);
+  public start(cb: () => void): void {
+    this.httpServer.listen({ port: this.port }, () => {
+      cb();
+    });
   }
 
   public stop(): void {
