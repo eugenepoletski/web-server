@@ -1,5 +1,5 @@
 import faker from 'faker';
-import { ShoppingListService } from './index';
+import { ShoppingListService } from './ShoppingListService';
 
 describe('Shopping List service', () => {
   let shoppingListService;
