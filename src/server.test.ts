@@ -1,5 +1,6 @@
 import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
+import faker from 'faker';
 import { Server } from './server';
 import { ShoppingListService } from './services/shoppingList';
 
@@ -8,14 +9,14 @@ describe('Server', () => {
   let server;
 
   beforeEach(() => {
-    server = new Server({ port: 4000, shoppingListService });
+    server = new Server({ port: 3000, shoppingListService });
   });
 
   describe('start a server', () => {
     it('should start on a port', async () => {
       await server.start();
 
-      expect((server.address() as AddressInfo).port).toBe(4000);
+      expect((server.address() as AddressInfo).port).toBe(3000);
 
       await server.stop();
     });
@@ -47,11 +48,10 @@ describe('Shopping list management', () => {
   let server, clientSocket, shoppingListService;
 
   beforeEach((done) => {
-    const port = 3000;
     shoppingListService = new ShoppingListService();
-    server = new Server({ port, shoppingListService });
+    server = new Server({ port: 3000, shoppingListService });
     server.start(() => {
-      clientSocket = Client(`http://localhost:${port}`);
+      clientSocket = Client(`http://localhost:${server.address().port}`);
       done();
     });
   });
@@ -66,8 +66,8 @@ describe('Shopping list management', () => {
   describe('Create a shopping list item', () => {
     it('should create an item entity', (done) => {
       const entityInfo = {
-        title: 'lorem ipsum',
-        completed: false,
+        title: faker.lorem.words(3),
+        completed: faker.datatype.boolean(),
       };
 
       clientSocket.emit('shoppingListItem:create', entityInfo, async (res) => {
