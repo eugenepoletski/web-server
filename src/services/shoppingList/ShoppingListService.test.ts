@@ -35,8 +35,6 @@ describe('Shopping List service', () => {
       expect(savedItem.id).toBe(resultItem.id);
       expect(savedItem.title).toBe(itemPayload.title);
       expect(savedItem.completed).toBe(itemPayload.completed);
-
-      // const savedItem = await shoppingListService.findById(resultItem.id);
     });
   });
 });
