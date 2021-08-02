@@ -1,3 +1,4 @@
+import { AddressInfo } from 'net';
 import { Server } from './server';
 import { ShoppingListService } from './services/shoppingList';
 
@@ -9,5 +10,7 @@ const server = new Server({
 });
 
 server.start(() => {
-  console.log(`Server listening on port ${PORT}`);
+  console.log(
+    `Server listening on port ${(server.address() as AddressInfo).port}`,
+  );
 });
