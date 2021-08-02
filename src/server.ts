@@ -40,13 +40,19 @@ export class Server {
     });
   }
 
-  public start(cb: () => void): void {
+  public start(cb?: () => void): void {
     this.httpServer.listen({ port: this.port }, () => {
-      cb();
+      if (cb) {
+        cb();
+      }
     });
   }
 
-  public stop(): void {
-    this.httpServer.close();
+  public stop(cb?: () => void): void {
+    this.httpServer.close(() => {
+      if (cb) {
+        cb();
+      }
+    });
   }
 }
