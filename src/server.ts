@@ -1,4 +1,5 @@
 import { createServer, Server as HttpServer } from 'http';
+import { AddressInfo } from 'net';
 import { Server as IOServer, Socket } from 'socket.io';
 
 interface ServerConfig {
@@ -40,19 +41,29 @@ export class Server {
     });
   }
 
-  public start(cb?: () => void): void {
-    this.httpServer.listen({ port: this.port }, () => {
-      if (cb) {
-        cb();
-      }
+  public address(): string | AddressInfo {
+    return this.httpServer.address();
+  }
+
+  public async start(cb?: () => void): Promise<void> {
+    await new Promise<void>((res) => {
+      this.httpServer.listen({ port: this.port }, () => {
+        if (cb) {
+          cb();
+        }
+        res();
+      });
     });
   }
 
-  public stop(cb?: () => void): void {
-    this.httpServer.close(() => {
-      if (cb) {
-        cb();
-      }
+  public async stop(cb?: () => void): Promise<void> {
+    await new Promise<void>((res) => {
+      this.httpServer.close(() => {
+        if (cb) {
+          cb();
+        }
+        res();
+      });
     });
   }
 }

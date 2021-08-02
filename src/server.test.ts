@@ -1,6 +1,47 @@
+import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import { Server } from './server';
 import { ShoppingListService } from './services/shoppingList';
+
+describe('Server', () => {
+  const shoppingListService = {};
+  let server;
+
+  beforeEach(() => {
+    server = new Server({ port: 4000, shoppingListService });
+  });
+
+  describe('start a server', () => {
+    it('should start on a port', async () => {
+      await server.start();
+
+      expect((server.address() as AddressInfo).port).toBe(4000);
+
+      await server.stop();
+    });
+
+    it('should invoke a callback', async () => {
+      const mockCb = jest.fn();
+
+      await server.start(mockCb);
+
+      expect(mockCb).toHaveBeenCalledTimes(1);
+
+      await server.stop();
+    });
+  });
+
+  describe('stop a server', () => {
+    it('should invoke a callback', async () => {
+      const mockCb = jest.fn();
+
+      await server.start();
+      await server.stop(mockCb);
+
+      expect(mockCb).toHaveBeenCalledTimes(1);
+    });
+  });
+});
 
 describe('Shopping list management', () => {
   let server, clientSocket, shoppingListService;
