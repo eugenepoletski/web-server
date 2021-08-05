@@ -5,11 +5,14 @@ import { Server } from './server';
 import { ShoppingListService } from './services/shoppingList';
 
 describe('Server', () => {
-  const shoppingListService = {};
+  const shoppingListServiceMock = {};
   let server;
 
   beforeEach(() => {
-    server = new Server({ port: 3000, shoppingListService });
+    server = new Server({
+      port: 3000,
+      shoppingListService: shoppingListServiceMock,
+    });
   });
 
   describe('start a server', () => {
@@ -78,6 +81,42 @@ describe('Shopping list management', () => {
           completed: entityInfo.completed,
         });
         done();
+      });
+    });
+  });
+
+  describe('Return list of items', () => {
+    it('should return a list of items', (done) => {
+      const entityInfo1 = {
+        title: faker.lorem.words(1),
+        completed: faker.datatype.boolean(),
+      };
+      const entityInfo2 = {
+        title: faker.lorem.words(2),
+        completed: faker.datatype.boolean(),
+      };
+
+      Promise.all([
+        shoppingListService.save(entityInfo1),
+        shoppingListService.save(entityInfo2),
+      ]).then(() => {
+        clientSocket.emit('shoppingListItem:list', (res) => {
+          const itemList = res.payload;
+          expect(itemList).toHaveLength(2);
+          expect(itemList).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                title: entityInfo1.title,
+                completed: entityInfo1.completed,
+              }),
+              expect.objectContaining({
+                title: entityInfo2.title,
+                completed: entityInfo2.completed,
+              }),
+            ]),
+          );
+          done();
+        });
       });
     });
   });

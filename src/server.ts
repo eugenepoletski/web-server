@@ -38,6 +38,13 @@ export class Server {
           },
         });
       });
+
+      socket.on('shoppingListItem:list', async (cb) => {
+        const itemList = await this.shoppingListService.findAll();
+        cb({
+          payload: itemList,
+        });
+      });
     });
   }
 
