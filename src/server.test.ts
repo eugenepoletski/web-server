@@ -74,9 +74,8 @@ describe('Shopping list management', () => {
       };
 
       clientSocket.emit('shoppingListItem:create', entityInfo, async (res) => {
-        const storedEntity = await shoppingListService.findById(res.payload.id);
-        expect(storedEntity).toMatchObject({
-          id: res.payload.id,
+        expect(res.payload).toMatchObject({
+          id: expect.any(String),
           title: entityInfo.title,
           completed: entityInfo.completed,
         });
@@ -99,19 +98,21 @@ describe('Shopping list management', () => {
       Promise.all([
         shoppingListService.save(entityInfo1),
         shoppingListService.save(entityInfo2),
-      ]).then(() => {
+      ]).then(([savedItem1, savedItem2]) => {
         clientSocket.emit('shoppingListItem:list', (res) => {
           const itemList = res.payload;
           expect(itemList).toHaveLength(2);
           expect(itemList).toEqual(
             expect.arrayContaining([
               expect.objectContaining({
-                title: entityInfo1.title,
-                completed: entityInfo1.completed,
+                id: savedItem1.id,
+                title: savedItem1.title,
+                completed: savedItem1.completed,
               }),
               expect.objectContaining({
-                title: entityInfo2.title,
-                completed: entityInfo2.completed,
+                id: savedItem2.id,
+                title: savedItem2.title,
+                completed: savedItem2.completed,
               }),
             ]),
           );
