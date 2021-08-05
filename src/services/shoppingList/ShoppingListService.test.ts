@@ -37,4 +37,23 @@ describe('Shopping List service', () => {
       expect(savedItem.completed).toBe(itemPayload.completed);
     });
   });
+
+  describe('Return items list', () => {
+    it('should return a list of entities', async () => {
+      const savedItem1 = await shoppingListService.save({
+        title: faker.lorem.words(1),
+        completed: faker.datatype.boolean(),
+      });
+
+      const savedItem2 = await shoppingListService.save({
+        title: faker.lorem.words(2),
+        completed: faker.datatype.boolean(),
+      });
+
+      const itemList = await shoppingListService.findAll();
+
+      expect(itemList).toContain(savedItem1);
+      expect(itemList).toContain(savedItem2);
+    });
+  });
 });

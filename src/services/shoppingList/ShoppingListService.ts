@@ -33,12 +33,14 @@ export class ShoppingListService {
 
     this.items.push(item);
 
-    return new Promise((res) => {
-      setTimeout(() => res(item), 1);
-    });
+    return Promise.resolve(item);
   }
 
   public findById(id: string): Promise<ShoppingListItem> {
     return Promise.resolve(this.items.find((item) => item.id === id));
+  }
+
+  public findAll(): Promise<ShoppingListItem[]> {
+    return Promise.resolve(this.items);
   }
 }
