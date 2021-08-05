@@ -4,7 +4,7 @@ import faker from 'faker';
 import { Server } from './server';
 
 class ShoppingListServiceMock {
-  save({ title, completed }): Promise<any> {
+  create({ title, completed }): Promise<any> {
     return Promise.resolve({ id: faker.datatype.uuid(), title, completed });
   }
 
@@ -94,16 +94,16 @@ describe('Shopping list management', () => {
 
   describe('Create a shopping list item', () => {
     it('should create an item entity', (done) => {
-      const entityInfo = {
+      const itemInfo = {
         title: faker.lorem.words(3),
         completed: faker.datatype.boolean(),
       };
 
-      clientSocket.emit('shoppingListItem:create', entityInfo, (res) => {
+      clientSocket.emit('shoppingListItem:create', itemInfo, (res) => {
         expect(res.payload).toMatchObject({
           id: expect.any(String),
-          title: entityInfo.title,
-          completed: entityInfo.completed,
+          title: itemInfo.title,
+          completed: itemInfo.completed,
         });
         done();
       });

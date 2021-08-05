@@ -19,41 +19,41 @@ describe('Shopping List service', () => {
 
   describe('Create a shopping list item entity', () => {
     it('should create an item', async () => {
-      const itemPayload = {
+      const itemInfo = {
         title: faker.lorem.words(3),
         completed: faker.datatype.boolean(),
       };
 
-      const resultItem = await shoppingListService.save(itemPayload);
+      const resultItem = await shoppingListService.create(itemInfo);
 
       expect(typeof resultItem.id === 'string').toBe(true);
-      expect(resultItem.title).toBe(itemPayload.title);
-      expect(resultItem.completed).toBe(itemPayload.completed);
+      expect(resultItem.title).toBe(itemInfo.title);
+      expect(resultItem.completed).toBe(itemInfo.completed);
 
-      const savedItem = await shoppingListService.findById(resultItem.id);
+      const createdItem = await shoppingListService.findById(resultItem.id);
 
-      expect(savedItem.id).toBe(resultItem.id);
-      expect(savedItem.title).toBe(itemPayload.title);
-      expect(savedItem.completed).toBe(itemPayload.completed);
+      expect(createdItem.id).toBe(resultItem.id);
+      expect(createdItem.title).toBe(itemInfo.title);
+      expect(createdItem.completed).toBe(itemInfo.completed);
     });
   });
 
   describe('Return items list', () => {
     it('should return a list of entities', async () => {
-      const savedItem1 = await shoppingListService.save({
+      const createdItem1 = await shoppingListService.create({
         title: faker.lorem.words(1),
         completed: faker.datatype.boolean(),
       });
 
-      const savedItem2 = await shoppingListService.save({
+      const createdItem2 = await shoppingListService.create({
         title: faker.lorem.words(2),
         completed: faker.datatype.boolean(),
       });
 
       const itemList = await shoppingListService.findAll();
 
-      expect(itemList).toContain(savedItem1);
-      expect(itemList).toContain(savedItem2);
+      expect(itemList).toContain(createdItem1);
+      expect(itemList).toContain(createdItem2);
     });
   });
 });

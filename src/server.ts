@@ -26,15 +26,15 @@ export class Server {
   private setupIOServer(): void {
     this.ioServer.on('connection', (socket: Socket) => {
       socket.on('shoppingListItem:create', async (payload: any, cb) => {
-        const saved = await this.shoppingListService.save({
+        const item = await this.shoppingListService.create({
           title: payload.title,
           completed: payload.completed,
         });
         cb({
           payload: {
-            id: saved.id,
-            title: saved.title,
-            completed: saved.completed,
+            id: item.id,
+            title: item.title,
+            completed: item.completed,
           },
         });
       });

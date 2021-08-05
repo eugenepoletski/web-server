@@ -21,7 +21,7 @@ export class ShoppingListService {
     cb();
   }
 
-  public save(itemInfo: {
+  public create(itemInfo: {
     title: string;
     completed: boolean;
   }): Promise<ShoppingListItem> {
