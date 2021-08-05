@@ -3,8 +3,37 @@ import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server } from './server';
 
+class ServiceError extends Error {
+  date: Date;
+  meta: {
+    [key: string]: any;
+  };
+
+  constructor(options, ...params) {
+    super(...params);
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ServiceError);
+    }
+
+    this.name = options.name;
+    this.message = options.message;
+    this.meta = options.meta;
+    this.date = new Date();
+  }
+}
+
 class ShoppingListServiceMock {
   create({ title, completed }): Promise<any> {
+    if (!title) {
+      return Promise.reject(
+        new ServiceError({
+          name: 'ValidationError',
+          message: 'Title is missing',
+          meta: { title: 'Title is missing' },
+        }),
+      );
+    }
     return Promise.resolve({ id: faker.datatype.uuid(), title, completed });
   }
 
@@ -93,7 +122,7 @@ describe('Shopping list management', () => {
   });
 
   describe('Create a shopping list item', () => {
-    it('should create an item entity', (done) => {
+    it('should create an item entity successfully', (done) => {
       const itemInfo = {
         title: faker.lorem.words(3),
         completed: faker.datatype.boolean(),
@@ -105,6 +134,23 @@ describe('Shopping list management', () => {
           title: itemInfo.title,
           completed: itemInfo.completed,
         });
+        done();
+      });
+    });
+
+    it('should return an error if title is missing', (done) => {
+      const itemInfo = {
+        title: '',
+        completed: faker.datatype.boolean(),
+      };
+
+      clientSocket.emit('shoppingListItem:create', itemInfo, (res) => {
+        expect(res.status).toBe('fail');
+        expect(res.payload).toEqual(
+          expect.objectContaining({
+            title: expect.any(String),
+          }),
+        );
         done();
       });
     });

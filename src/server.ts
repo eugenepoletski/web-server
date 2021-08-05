@@ -26,17 +26,24 @@ export class Server {
   private setupIOServer(): void {
     this.ioServer.on('connection', (socket: Socket) => {
       socket.on('shoppingListItem:create', async (payload: any, cb) => {
-        const item = await this.shoppingListService.create({
-          title: payload.title,
-          completed: payload.completed,
-        });
-        cb({
-          payload: {
-            id: item.id,
-            title: item.title,
-            completed: item.completed,
-          },
-        });
+        try {
+          const item = await this.shoppingListService.create({
+            title: payload.title,
+            completed: payload.completed,
+          });
+          cb({
+            payload: {
+              id: item.id,
+              title: item.title,
+              completed: item.completed,
+            },
+          });
+        } catch (err) {
+          cb({
+            status: 'fail',
+            payload: err.meta,
+          });
+        }
       });
 
       socket.on('shoppingListItem:list', async (cb) => {
