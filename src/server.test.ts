@@ -2,61 +2,8 @@ import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server } from './server';
-
-class ServiceError extends Error {
-  date: Date;
-  meta: {
-    [key: string]: any;
-  };
-
-  constructor(options, ...params) {
-    super(...params);
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ServiceError);
-    }
-
-    this.name = options.name;
-    this.message = options.message;
-    this.meta = options.meta;
-    this.date = new Date();
-  }
-}
-
-class ShoppingListServiceMock {
-  create({ title, completed }): Promise<any> {
-    if (!title) {
-      return Promise.reject(
-        new ServiceError({
-          name: 'ValidationError',
-          message: 'Title is missing',
-          meta: { title: 'Title is missing' },
-        }),
-      );
-    }
-    return Promise.resolve({ id: faker.datatype.uuid(), title, completed });
-  }
-
-  findAll(): Promise<any[]> {
-    return Promise.resolve([
-      {
-        id: faker.datatype.uuid(),
-        title: faker.lorem.words(1),
-        completed: faker.datatype.boolean(),
-      },
-      {
-        id: faker.datatype.uuid(),
-        title: faker.lorem.words(3),
-        completed: faker.datatype.boolean(),
-      },
-      {
-        id: faker.datatype.uuid(),
-        title: faker.lorem.words(2),
-        completed: faker.datatype.boolean(),
-      },
-    ]);
-  }
-}
+import { ShoppingListService } from './services/shoppingList/__mocks__/ShoppingListService';
+import { shoppingListItemSchema } from './services/shoppingList/schemas/ShoppingListItemSchema';
 
 describe('Server', () => {
   let server;
@@ -64,7 +11,7 @@ describe('Server', () => {
   beforeEach(() => {
     server = new Server({
       port: 3000,
-      shoppingListService: new ShoppingListServiceMock(),
+      shoppingListService: new ShoppingListService({ shoppingListItemSchema }),
     });
   });
 
@@ -106,7 +53,7 @@ describe('Shopping list management', () => {
   beforeEach((done) => {
     server = new Server({
       port: 3000,
-      shoppingListService: new ShoppingListServiceMock(),
+      shoppingListService: new ShoppingListService({ shoppingListItemSchema }),
     });
     server.start(() => {
       clientSocket = Client(`http://localhost:${server.address().port}`);
@@ -124,7 +71,7 @@ describe('Shopping list management', () => {
   describe('Create a shopping list item', () => {
     it('should create an item entity successfully', (done) => {
       const itemInfo = {
-        title: faker.lorem.words(3),
+        title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
 

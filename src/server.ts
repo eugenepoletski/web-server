@@ -7,6 +7,16 @@ interface ServerConfig {
   shoppingListService: any;
 }
 
+interface ServiceValidationError {
+  error: {
+    details: [];
+  };
+}
+
+function isServiceValidationError(obj: any): obj is ServiceValidationError {
+  return 'error' in obj;
+}
+
 export class Server {
   private httpServer: HttpServer;
   private ioServer: IOServer;
@@ -38,11 +48,24 @@ export class Server {
               completed: item.completed,
             },
           });
-        } catch (err) {
-          cb({
-            status: 'fail',
-            payload: err.meta,
-          });
+        } catch (err: any) {
+          const payload = {};
+
+          if (isServiceValidationError(err)) {
+            const validationError: ServiceValidationError = err;
+
+            for (const {
+              message,
+              context: { key },
+            } of validationError.error.details) {
+              payload[key] = message;
+            }
+
+            return cb({
+              status: 'fail',
+              payload,
+            });
+          }
         }
       });
 
