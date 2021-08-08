@@ -1,6 +1,7 @@
 import faker from 'faker';
-import { Schema, ValidationError } from 'joi';
+import { Schema } from 'joi';
 import { shoppingListItemSchema } from '../schemas/ShoppingListItemSchema';
+import { isValidationError } from '../utils';
 
 export class ShoppingListService {
   items: [];
@@ -17,7 +18,7 @@ export class ShoppingListService {
       completed,
     });
 
-    if (validationReport.error instanceof ValidationError) {
+    if (this.isValidationError(validationReport)) {
       return Promise.reject(validationReport);
     }
     return Promise.resolve({ id: faker.datatype.uuid(), title, completed });
@@ -27,7 +28,7 @@ export class ShoppingListService {
     return Promise.resolve([
       {
         id: faker.datatype.uuid(),
-        title: faker.lorem.words(1),
+        title: faker.lorem.words(3),
         completed: faker.datatype.boolean(),
       },
       {
@@ -37,9 +38,13 @@ export class ShoppingListService {
       },
       {
         id: faker.datatype.uuid(),
-        title: faker.lorem.words(2),
+        title: faker.lorem.words(3),
         completed: faker.datatype.boolean(),
       },
     ]);
+  }
+
+  public isValidationError(obj: any): boolean {
+    return isValidationError(obj);
   }
 }

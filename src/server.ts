@@ -7,14 +7,11 @@ interface ServerConfig {
   shoppingListService: any;
 }
 
+// ToDo! import this
 interface ServiceValidationError {
   error: {
     details: [];
   };
-}
-
-function isServiceValidationError(obj: any): obj is ServiceValidationError {
-  return 'error' in obj;
 }
 
 export class Server {
@@ -51,7 +48,7 @@ export class Server {
         } catch (err: any) {
           const payload = {};
 
-          if (isServiceValidationError(err)) {
+          if (this.shoppingListService.isValidationError(err)) {
             const validationError: ServiceValidationError = err;
 
             for (const {

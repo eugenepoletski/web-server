@@ -70,28 +70,28 @@ describe('Shopping list management', () => {
 
   describe('Create a shopping list item', () => {
     it('should create an item entity successfully', (done) => {
-      const itemInfo = {
+      const dummyItem = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
 
-      clientSocket.emit('shoppingListItem:create', itemInfo, (res) => {
+      clientSocket.emit('shoppingListItem:create', dummyItem, (res) => {
         expect(res.payload).toMatchObject({
           id: expect.any(String),
-          title: itemInfo.title,
-          completed: itemInfo.completed,
+          title: dummyItem.title,
+          completed: dummyItem.completed,
         });
         done();
       });
     });
 
     it('should return an error if title is missing', (done) => {
-      const itemInfo = {
+      const dummyItem = {
         title: '',
         completed: faker.datatype.boolean(),
       };
 
-      clientSocket.emit('shoppingListItem:create', itemInfo, (res) => {
+      clientSocket.emit('shoppingListItem:create', dummyItem, (res) => {
         expect(res.status).toBe('fail');
         expect(res.payload).toEqual(
           expect.objectContaining({
