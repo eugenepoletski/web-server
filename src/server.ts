@@ -2,6 +2,12 @@ import { createServer, Server as HttpServer } from 'http';
 import { AddressInfo } from 'net';
 import { Server as IOServer, Socket } from 'socket.io';
 
+interface ShoppingListService {
+  create(itemInfo: any): any;
+  findAll(): any[];
+  isValidationError(obj: any): boolean;
+}
+
 interface ServerConfig {
   port: number;
   shoppingListService: any;
@@ -17,7 +23,7 @@ interface ServiceValidationError {
 export class Server {
   private httpServer: HttpServer;
   private ioServer: IOServer;
-  private shoppingListService: any;
+  private shoppingListService: ShoppingListService;
   private port: number;
 
   constructor({ port, shoppingListService }: ServerConfig) {
@@ -39,6 +45,7 @@ export class Server {
             completed: payload.completed,
           });
           cb({
+            status: 'success',
             payload: {
               id: item.id,
               title: item.title,

@@ -76,6 +76,7 @@ describe('Shopping list management', () => {
       };
 
       clientSocket.emit('shoppingListItem:create', dummyItem, (res) => {
+        expect(res.status).toBe('success');
         expect(res.payload).toMatchObject({
           id: expect.any(String),
           title: dummyItem.title,
