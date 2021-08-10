@@ -1,7 +1,6 @@
 import faker from 'faker';
 import { ShoppingListService } from './ShoppingListService';
 import { shoppingListItemSchema } from './schemas/ShoppingListItemSchema';
-import exp from 'constants';
 
 describe('Shopping List service', () => {
   let shoppingListService;

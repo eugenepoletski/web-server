@@ -3,8 +3,10 @@
   "extends": ["plugin:@typescript-eslint/recommended"],
   "parserOptions": {
     "ecmaVersion": 2018,
-    "sourceType": "module",
-    "rules": {}
+    "sourceType": "module"
+  },
+  "rules": {
+    "max-len": ["warn", { "code": 80 }]
   },
   "plugins": ["jest"]
 }

@@ -3,8 +3,8 @@ import { AddressInfo } from 'net';
 import { Server as IOServer, Socket } from 'socket.io';
 
 interface ShoppingListService {
-  create(itemInfo: any): any;
-  findAll(): any[];
+  create(itemInfo: any): Promise<any>;
+  findAll(): Promise<any[]>;
   isValidationError(obj: any): boolean;
 }
 
@@ -30,7 +30,10 @@ export class Server {
     this.port = port;
     this.httpServer = createServer();
     this.ioServer = new IOServer(this.httpServer, {
-      //
+      cors: {
+        origin: 'http://localhost:3000',
+        methods: ['*'],
+      },
     });
     this.shoppingListService = shoppingListService;
     this.setupIOServer();
@@ -39,6 +42,10 @@ export class Server {
   private setupIOServer(): void {
     this.ioServer.on('connection', (socket: Socket) => {
       socket.on('shoppingListItem:create', async (payload: any, cb) => {
+        if (typeof cb !== 'function') {
+          return socket.disconnect();
+        }
+
         try {
           const item = await this.shoppingListService.create({
             title: payload.title,
@@ -74,7 +81,12 @@ export class Server {
       });
 
       socket.on('shoppingListItem:list', async (cb) => {
+        if (typeof cb !== 'function') {
+          return socket.disconnect();
+        }
+
         const itemList = await this.shoppingListService.findAll();
+
         cb({
           payload: itemList,
         });

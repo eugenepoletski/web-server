@@ -86,6 +86,18 @@ describe('Shopping list management', () => {
       });
     });
 
+    it('shoul disconnect if callback is missing', (done) => {
+      const dummyItem = {
+        title: faker.lorem.words(3).slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+
+      clientSocket.emit('shoppingListItem:create', dummyItem);
+      clientSocket.on('disconnect', () => {
+        done();
+      });
+    });
+
     it('should return an error if title is missing', (done) => {
       const dummyItem = {
         title: '',
@@ -128,6 +140,13 @@ describe('Shopping list management', () => {
             }),
           ]),
         );
+        done();
+      });
+    });
+
+    it('should disconnect if callback is missing', (done) => {
+      clientSocket.emit('shoppingListItem:list');
+      clientSocket.on('disconnect', () => {
         done();
       });
     });
