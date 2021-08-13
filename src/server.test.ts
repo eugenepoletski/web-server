@@ -2,8 +2,20 @@ import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server } from './server';
-import { ShoppingListService } from './services/shoppingList/__mocks__/ShoppingListService';
-import { shoppingListItemSchema } from './services/shoppingList/schemas/ShoppingListItemSchema';
+
+class MockedShoppingListService {
+  public create() {
+    jest.fn();
+  }
+
+  public findAll() {
+    jest.fn();
+  }
+
+  public isValidationError() {
+    jest.fn();
+  }
+}
 
 describe('Server', () => {
   let server;
@@ -11,7 +23,7 @@ describe('Server', () => {
   beforeEach(() => {
     server = new Server({
       port: 3000,
-      shoppingListService: new ShoppingListService({ shoppingListItemSchema }),
+      shoppingListService: new MockedShoppingListService(),
     });
   });
 
@@ -48,12 +60,13 @@ describe('Server', () => {
 });
 
 describe('Shopping list management', () => {
+  const mockedShoppingListService = new MockedShoppingListService();
   let server, clientSocket;
 
   beforeEach((done) => {
     server = new Server({
       port: 3000,
-      shoppingListService: new ShoppingListService({ shoppingListItemSchema }),
+      shoppingListService: mockedShoppingListService,
     });
     server.start(() => {
       clientSocket = Client(`http://localhost:${server.address().port}`);
@@ -62,6 +75,7 @@ describe('Shopping list management', () => {
   });
 
   afterEach((done) => {
+    jest.clearAllMocks();
     clientSocket.close();
     server.stop(() => {
       done();
@@ -70,23 +84,29 @@ describe('Shopping list management', () => {
 
   describe('Create a shopping list item', () => {
     it('should create an item entity successfully', (done) => {
-      const dummyItem = {
+      const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
 
-      clientSocket.emit('shoppingListItem:create', dummyItem, (res) => {
+      const dummyItem = {
+        id: faker.datatype.uuid(),
+        title: dummyItemInfo.title,
+        completed: dummyItemInfo.completed,
+      };
+
+      jest
+        .spyOn(mockedShoppingListService, 'create')
+        .mockImplementationOnce(() => Promise.resolve(dummyItem));
+
+      clientSocket.emit('shoppingListItem:create', dummyItemInfo, (res) => {
         expect(res.status).toBe('success');
-        expect(res.payload).toMatchObject({
-          id: expect.any(String),
-          title: dummyItem.title,
-          completed: dummyItem.completed,
-        });
+        expect(res.payload).toMatchObject(dummyItem);
         done();
       });
     });
 
-    it('shoul disconnect if callback is missing', (done) => {
+    it('should disconnect if callback is missing', (done) => {
       const dummyItem = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -98,17 +118,41 @@ describe('Shopping list management', () => {
       });
     });
 
-    it('should return an error if title is missing', (done) => {
+    it('should return an error of type "fail" with faulty item property name and a message if item validation failed', (done) => {
       const dummyItem = {
         title: '',
         completed: faker.datatype.boolean(),
       };
 
+      const dummyErrorMessage = faker.lorem.sentence();
+      const dummyItemInvalidPropertyName = faker.datatype.string();
+
+      const dummyValidationError = {
+        error: {
+          details: [
+            {
+              message: dummyErrorMessage,
+              context: {
+                key: dummyItemInvalidPropertyName,
+              },
+            },
+          ],
+        },
+      };
+
+      jest
+        .spyOn(mockedShoppingListService, 'create')
+        .mockImplementationOnce(() => Promise.reject(dummyValidationError));
+
+      jest
+        .spyOn(mockedShoppingListService, 'isValidationError')
+        .mockImplementationOnce(() => true);
+
       clientSocket.emit('shoppingListItem:create', dummyItem, (res) => {
         expect(res.status).toBe('fail');
         expect(res.payload).toEqual(
           expect.objectContaining({
-            title: expect.any(String),
+            [dummyItemInvalidPropertyName]: dummyErrorMessage,
           }),
         );
         done();
@@ -118,27 +162,33 @@ describe('Shopping list management', () => {
 
   describe('Return list of items', () => {
     it('should return a list of items', (done) => {
+      const dummyItem1 = {
+        id: faker.datatype.uuid(),
+        title: faker.lorem.words(3).slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+      const dummyItem2 = {
+        id: faker.datatype.uuid(),
+        title: faker.lorem.words(1).slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+      const dummyItem3 = {
+        id: faker.datatype.uuid(),
+        title: faker.lorem.words(2).slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+
+      jest
+        .spyOn(mockedShoppingListService, 'findAll')
+        .mockImplementation(() =>
+          Promise.resolve([dummyItem1, dummyItem2, dummyItem3]),
+        );
+
       clientSocket.emit('shoppingListItem:list', (res) => {
-        const itemList = res.payload;
-        expect(itemList).toHaveLength(3);
-        expect(itemList).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              id: expect.any(String),
-              title: expect.any(String),
-              completed: expect.any(Boolean),
-            }),
-            expect.objectContaining({
-              id: expect.any(String),
-              title: expect.any(String),
-              completed: expect.any(Boolean),
-            }),
-            expect.objectContaining({
-              id: expect.any(String),
-              title: expect.any(String),
-              completed: expect.any(Boolean),
-            }),
-          ]),
+        const dummyItemList = res.payload;
+        expect(dummyItemList).toHaveLength(3);
+        expect(dummyItemList).toEqual(
+          expect.arrayContaining([dummyItem3, dummyItem1, dummyItem2]),
         );
         done();
       });
