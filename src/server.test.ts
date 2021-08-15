@@ -2,7 +2,6 @@ import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server } from './server';
-import { emit } from 'process';
 
 class MockedShoppingListService {
   public create() {

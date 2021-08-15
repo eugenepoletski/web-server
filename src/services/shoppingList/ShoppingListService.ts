@@ -1,20 +1,27 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Schema } from 'joi';
-import { isValidationError } from './utils';
 
-interface ShoppingListItem {
+interface IShoppingListItem {
   id: string;
   title: string;
   completed: boolean;
 }
 
 export class ShoppingListService {
-  private items: ShoppingListItem[];
+  private items: IShoppingListItem[];
   private shoppingListItemSchema: Schema;
+  private isValidationError: (obj: any) => boolean;
 
-  constructor({ shoppingListItemSchema }) {
+  constructor({
+    isValidationError,
+    shoppingListItemSchema,
+  }: {
+    isValidationError: (obj: any) => boolean;
+    shoppingListItemSchema: Schema;
+  }) {
     this.items = [];
     this.shoppingListItemSchema = shoppingListItemSchema;
+    this.isValidationError = isValidationError;
   }
 
   public start(cb: () => void): void {
@@ -28,7 +35,7 @@ export class ShoppingListService {
   public create(itemInfo: {
     title: string;
     completed: boolean;
-  }): Promise<ShoppingListItem> {
+  }): Promise<IShoppingListItem> {
     const validationReport = this.shoppingListItemSchema.validate({
       title: itemInfo.title,
       completed: itemInfo.completed,
@@ -49,15 +56,11 @@ export class ShoppingListService {
     return Promise.resolve(item);
   }
 
-  public findById(id: string): Promise<ShoppingListItem> {
+  public findById(id: string): Promise<IShoppingListItem> {
     return Promise.resolve(this.items.find((item) => item.id === id));
   }
 
-  public findAll(): Promise<ShoppingListItem[]> {
+  public findAll(): Promise<IShoppingListItem[]> {
     return Promise.resolve(this.items);
-  }
-
-  public isValidationError(obj: any): boolean {
-    return isValidationError(obj);
   }
 }

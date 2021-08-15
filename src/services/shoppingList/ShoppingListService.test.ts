@@ -1,12 +1,16 @@
 import faker from 'faker';
 import { ShoppingListService } from './ShoppingListService';
 import { shoppingListItemSchema } from './schemas/ShoppingListItemSchema';
+import { isValidationError } from './utils';
 
 describe('Shopping List service', () => {
   let shoppingListService;
 
   beforeEach((done) => {
-    shoppingListService = new ShoppingListService({ shoppingListItemSchema });
+    shoppingListService = new ShoppingListService({
+      shoppingListItemSchema,
+      isValidationError,
+    });
     shoppingListService.start(() => {
       done();
     });
