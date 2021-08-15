@@ -77,6 +77,11 @@ export class Server {
               payload,
             });
           }
+
+          cb({
+            status: 'error',
+            message: err.message,
+          });
         }
       });
 

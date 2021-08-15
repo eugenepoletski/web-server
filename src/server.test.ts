@@ -2,6 +2,7 @@ import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server } from './server';
+import { emit } from 'process';
 
 class MockedShoppingListService {
   public create() {
@@ -107,18 +108,19 @@ describe('Shopping list management', () => {
     });
 
     it('should disconnect if callback is missing', (done) => {
-      const dummyItem = {
+      const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
 
-      clientSocket.emit('shoppingListItem:create', dummyItem);
+      clientSocket.emit('shoppingListItem:create', dummyItemInfo);
       clientSocket.on('disconnect', () => {
         done();
       });
     });
 
-    it('should return an error of type "fail" with faulty item property name and a message if item validation failed', (done) => {
+    it(`should return an error of type "fail" with faulty item property name
+      and a message if item validation failed`, (done) => {
       const dummyItem = {
         title: '',
         completed: faker.datatype.boolean(),
@@ -155,6 +157,31 @@ describe('Shopping list management', () => {
             [dummyItemInvalidPropertyName]: dummyErrorMessage,
           }),
         );
+        done();
+      });
+    });
+
+    it('should return an error of type "error" with a message for exceptions', (done) => {
+      const dummtItemInfo = {
+        title: faker.lorem.word(3).slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+
+      const dummyErrorMessage = faker.lorem.word(3).slice(0, 50);
+
+      jest
+        .spyOn(mockedShoppingListService, 'create')
+        .mockImplementationOnce(() => {
+          throw new Error(dummyErrorMessage);
+        });
+
+      jest
+        .spyOn(mockedShoppingListService, 'isValidationError')
+        .mockImplementationOnce(() => false);
+
+      clientSocket.emit('shoppingListItem:create', dummtItemInfo, (res) => {
+        expect(res.status).toBe('error');
+        expect(res.message).toEqual(expect.any(String));
         done();
       });
     });
