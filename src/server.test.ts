@@ -215,6 +215,7 @@ describe('Shopping list management', () => {
         );
 
       clientSocket.emit('shoppingListItem:list', (res) => {
+        expect(res.status).toBe('success');
         const dummyItemList = res.payload;
         expect(dummyItemList).toHaveLength(3);
         expect(dummyItemList).toEqual(

@@ -103,6 +103,7 @@ export class Server {
           const itemList = await this.shoppingListService.findAll();
 
           cb({
+            status: 'success',
             payload: itemList,
           });
         } catch (err) {
