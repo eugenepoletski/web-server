@@ -2,7 +2,6 @@ import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server, Service } from './server';
-import { doesNotMatch } from 'assert/strict';
 
 class MockedShoppingListService {
   public create() {
@@ -233,9 +232,7 @@ describe('Shopping list management', () => {
     });
 
     it('should return an error of type "error" with a message for exceptions', (done) => {
-      const dummyErrorMessage = faker.lorem.words(
-        faker.datatype.number({ min: 1, max: 10 }),
-      );
+      const dummyErrorMessage = faker.lorem.sentence();
 
       jest
         .spyOn(mockedShoppingListService, 'findAll')
