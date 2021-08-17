@@ -1,7 +1,7 @@
 import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
-import { Server } from './server';
+import { Server, Service } from './server';
 
 class MockedShoppingListService {
   public create() {
@@ -21,9 +21,11 @@ describe('Server', () => {
   let server;
 
   beforeEach(() => {
+    const mockedShoppingListService = new MockedShoppingListService();
     server = new Server({
       port: 3000,
-      shoppingListService: new MockedShoppingListService(),
+      shoppingListService:
+        mockedShoppingListService as unknown as jest.Mocked<Service>,
     });
   });
 
@@ -66,7 +68,8 @@ describe('Shopping list management', () => {
   beforeEach((done) => {
     server = new Server({
       port: 3000,
-      shoppingListService: mockedShoppingListService,
+      shoppingListService:
+        mockedShoppingListService as unknown as jest.Mocked<Service>,
     });
     server.start(() => {
       clientSocket = Client(`http://localhost:${server.address().port}`);

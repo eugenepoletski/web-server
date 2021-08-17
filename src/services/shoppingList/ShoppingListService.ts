@@ -10,7 +10,7 @@ interface IShoppingListItem {
 export class ShoppingListService {
   private items: IShoppingListItem[];
   private shoppingListItemSchema: Schema;
-  private isValidationError: (obj: any) => boolean;
+  public isValidationError: (obj: any) => boolean;
 
   constructor({
     isValidationError,

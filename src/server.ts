@@ -2,15 +2,24 @@ import { createServer, Server as HttpServer } from 'http';
 import { AddressInfo } from 'net';
 import { Server as IOServer, Socket } from 'socket.io';
 
-interface ShoppingListService {
-  create(itemInfo: any): Promise<any>;
-  findAll(): Promise<any[]>;
+type Primitives = string | number | boolean | null;
+type Json = { [key: string]: Primitives | Primitives[] | Json[] | Json };
+
+export interface Item {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
+export interface Service {
+  create(itemInfo: Json): Promise<Item>;
+  findAll(): Promise<Item[]>;
   isValidationError(obj: any): boolean;
 }
 
 interface ServerConfig {
   port: number;
-  shoppingListService: any;
+  shoppingListService: Service;
 }
 
 // ToDo! import this
@@ -23,7 +32,7 @@ interface ServiceValidationError {
 export class Server {
   private httpServer: HttpServer;
   private ioServer: IOServer;
-  private shoppingListService: ShoppingListService;
+  private shoppingListService: Service;
   private port: number;
 
   constructor({ port, shoppingListService }: ServerConfig) {
@@ -41,7 +50,7 @@ export class Server {
 
   private setupIOServer(): void {
     this.ioServer.on('connection', (socket: Socket) => {
-      socket.on('shoppingListItem:create', async (payload: any, cb) => {
+      socket.on('shoppingListItem:create', async (payload: Json, cb) => {
         if (typeof cb !== 'function') {
           return socket.disconnect();
         }
