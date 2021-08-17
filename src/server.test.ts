@@ -2,6 +2,7 @@ import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server, Service } from './server';
+import { doesNotMatch } from 'assert/strict';
 
 class MockedShoppingListService {
   public create() {
@@ -226,6 +227,24 @@ describe('Shopping list management', () => {
     it('should disconnect if callback is missing', (done) => {
       clientSocket.emit('shoppingListItem:list');
       clientSocket.on('disconnect', () => {
+        done();
+      });
+    });
+
+    it('should return an error of type "error" with a message for exceptions', (done) => {
+      const dummyErrorMessage = faker.lorem.words(
+        faker.datatype.number({ min: 1, max: 10 }),
+      );
+
+      jest
+        .spyOn(mockedShoppingListService, 'findAll')
+        .mockImplementationOnce(() => {
+          throw new Error(dummyErrorMessage);
+        });
+
+      clientSocket.emit('shoppingListItem:list', (res) => {
+        expect(res.status).toBe('error');
+        expect(res.message).toBe(dummyErrorMessage);
         done();
       });
     });

@@ -99,11 +99,18 @@ export class Server {
           return socket.disconnect();
         }
 
-        const itemList = await this.shoppingListService.findAll();
+        try {
+          const itemList = await this.shoppingListService.findAll();
 
-        cb({
-          payload: itemList,
-        });
+          cb({
+            payload: itemList,
+          });
+        } catch (err) {
+          cb({
+            status: 'error',
+            message: err.message,
+          });
+        }
       });
     });
   }
