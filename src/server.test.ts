@@ -3,6 +3,12 @@ import Client from 'socket.io-client';
 import faker from 'faker';
 import { Server, Service } from './server';
 
+const mockedLogger = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
+
 class MockedShoppingListService {
   public create() {
     jest.fn();
@@ -23,9 +29,10 @@ describe('Server', () => {
   beforeEach(() => {
     const mockedShoppingListService = new MockedShoppingListService();
     server = new Server({
-      port: 3000,
+      port: 3001,
       shoppingListService:
         mockedShoppingListService as unknown as jest.Mocked<Service>,
+      logger: mockedLogger,
     });
   });
 
@@ -33,7 +40,7 @@ describe('Server', () => {
     it('should start on a port', async () => {
       await server.start();
 
-      expect((server.address() as AddressInfo).port).toBe(3000);
+      expect((server.address() as AddressInfo).port).toBe(3001);
 
       await server.stop();
     });
@@ -67,9 +74,10 @@ describe('Shopping list management', () => {
 
   beforeEach((done) => {
     server = new Server({
-      port: 3000,
+      port: 3001,
       shoppingListService:
         mockedShoppingListService as unknown as jest.Mocked<Service>,
+      logger: mockedLogger,
     });
     server.start(() => {
       clientSocket = Client(`http://localhost:${server.address().port}`);

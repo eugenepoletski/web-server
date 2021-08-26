@@ -20,6 +20,7 @@ export interface Service {
 interface ServerConfig {
   port: number;
   shoppingListService: Service;
+  logger: any;
 }
 
 // ToDo! import this
@@ -34,8 +35,9 @@ export class Server {
   private ioServer: IOServer;
   private shoppingListService: Service;
   private port: number;
+  private logger: any;
 
-  constructor({ port, shoppingListService }: ServerConfig) {
+  constructor({ port, shoppingListService, logger }: ServerConfig) {
     this.port = port;
     this.httpServer = createServer();
     this.ioServer = new IOServer(this.httpServer, {
@@ -45,12 +47,19 @@ export class Server {
       },
     });
     this.shoppingListService = shoppingListService;
+    this.logger = logger;
     this.setupIOServer();
   }
 
   private setupIOServer(): void {
     this.ioServer.on('connection', (socket: Socket) => {
+      // eslint-disable-next-line max-len
+      this.logger.info({
+        message: `connection : socket id=${socket.id} connected`,
+      });
+
       socket.on('shoppingListItem:create', async (payload: Json, cb) => {
+        this.logger.info({ message: `shoppingListItem:create` });
         if (typeof cb !== 'function') {
           return socket.disconnect();
         }
