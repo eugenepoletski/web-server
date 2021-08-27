@@ -25,7 +25,7 @@ describe('Shopping List service', () => {
   describe('Create a shopping list item entity', () => {
     it('should create an item', async () => {
       const dummyItem = {
-        title: faker.lorem.words(3).slice(0, 50),
+        title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       };
 
@@ -66,15 +66,15 @@ describe('Shopping List service', () => {
     });
   });
 
-  describe('Return items list', () => {
+  describe('Retrieve items list', () => {
     it('should return a list of entities', async () => {
       const createdItem1 = await shoppingListService.create({
-        title: faker.lorem.words(2),
+        title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       });
 
       const createdItem2 = await shoppingListService.create({
-        title: faker.lorem.words(2),
+        title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       });
 
@@ -82,6 +82,40 @@ describe('Shopping List service', () => {
 
       expect(itemList).toContain(createdItem1);
       expect(itemList).toContain(createdItem2);
+    });
+  });
+
+  describe('Retrieve an item by id', () => {
+    it('shouldfind and return an item by its id', async () => {
+      const dummyItem = await shoppingListService.create({
+        title: faker.lorem.sentence().slice(0, 50),
+        completed: faker.datatype.boolean(),
+      });
+
+      const foundDummyItem = await shoppingListService.findById(dummyItem.id);
+
+      expect(foundDummyItem).toMatchObject(dummyItem);
+    });
+  });
+
+  describe('Update an item', () => {
+    it('should update item title', async () => {
+      const oldDummyItem = await shoppingListService.create({
+        title: faker.lorem.sentence().slice(0, 50),
+        completed: faker.datatype.boolean(),
+      });
+      const newDummyTitle = faker.lorem.sentence().slice(0, 50);
+
+      const updatedDummyItem = await shoppingListService.update(
+        oldDummyItem.id,
+        { title: newDummyTitle },
+      );
+
+      expect(updatedDummyItem).toMatchObject({
+        id: oldDummyItem.id,
+        title: newDummyTitle,
+        completed: oldDummyItem.completed,
+      });
     });
   });
 });

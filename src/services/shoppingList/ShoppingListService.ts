@@ -1,14 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Schema } from 'joi';
 
-interface IShoppingListItem {
+interface Item {
   id: string;
   title: string;
   completed: boolean;
 }
 
+interface ItemUpdate {
+  title?: string;
+  completed?: boolean;
+}
+
 export class ShoppingListService {
-  private items: IShoppingListItem[];
+  private items: Item[];
   private shoppingListItemSchema: Schema;
   public isValidationError: (obj: any) => boolean;
 
@@ -35,7 +40,7 @@ export class ShoppingListService {
   public create(itemInfo: {
     title: string;
     completed: boolean;
-  }): Promise<IShoppingListItem> {
+  }): Promise<Item> {
     const validationReport = this.shoppingListItemSchema.validate({
       title: itemInfo.title,
       completed: itemInfo.completed,
@@ -56,11 +61,26 @@ export class ShoppingListService {
     return Promise.resolve(item);
   }
 
-  public findById(id: string): Promise<IShoppingListItem> {
+  public findById(id: string): Promise<Item> {
     return Promise.resolve(this.items.find((item) => item.id === id));
   }
 
-  public findAll(): Promise<IShoppingListItem[]> {
+  public findAll(): Promise<Item[]> {
     return Promise.resolve(this.items);
+  }
+
+  public async update(id: string, itemUpdate: ItemUpdate): Promise<Item> {
+    const storedItem = await this.findById(id);
+    // ToDo! Add whitelisting of allowed properties
+    const updatedItem = { ...storedItem, ...itemUpdate };
+    const nextItems = this.items.map((item) => {
+      if (item.id !== id) {
+        return item;
+      }
+
+      return updatedItem;
+    });
+    this.items = nextItems;
+    return Promise.resolve(updatedItem);
   }
 }
