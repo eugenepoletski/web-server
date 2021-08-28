@@ -115,11 +115,15 @@ describe('Shopping list management', () => {
         .spyOn(mockedShoppingListService, 'createItem')
         .mockImplementationOnce(() => Promise.resolve(dummyItem));
 
-      clientSocket.emit('shoppingListItem:create', dummyItemInfo, (res) => {
-        expect(res.status).toBe('success');
-        expect(res.payload).toMatchObject(dummyItem);
-        done();
-      });
+      clientSocket.emit(
+        'shoppingListItem:create',
+        dummyItemInfo,
+        (response) => {
+          expect(response.status).toBe('success');
+          expect(response.payload).toMatchObject(dummyItem);
+          done();
+        },
+      );
     });
 
     it('should disconnect if callback is missing', (done) => {
@@ -165,9 +169,9 @@ describe('Shopping list management', () => {
         .spyOn(mockedShoppingListService, 'isValidationError')
         .mockImplementationOnce(() => true);
 
-      clientSocket.emit('shoppingListItem:create', dummyItem, (res) => {
-        expect(res.status).toBe('fail');
-        expect(res.payload).toEqual(
+      clientSocket.emit('shoppingListItem:create', dummyItem, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toEqual(
           expect.objectContaining({
             [dummyItemInvalidPropertyName]: dummyErrorMessage,
           }),
@@ -194,11 +198,15 @@ describe('Shopping list management', () => {
         .spyOn(mockedShoppingListService, 'isValidationError')
         .mockImplementationOnce(() => false);
 
-      clientSocket.emit('shoppingListItem:create', dummtItemInfo, (res) => {
-        expect(res.status).toBe('error');
-        expect(res.message).toEqual(expect.any(String));
-        done();
-      });
+      clientSocket.emit(
+        'shoppingListItem:create',
+        dummtItemInfo,
+        (response) => {
+          expect(response.status).toBe('error');
+          expect(response.message).toEqual(expect.any(String));
+          done();
+        },
+      );
     });
   });
 
@@ -226,9 +234,9 @@ describe('Shopping list management', () => {
           Promise.resolve([dummyItem1, dummyItem2, dummyItem3]),
         );
 
-      clientSocket.emit('shoppingListItem:list', (res) => {
-        expect(res.status).toBe('success');
-        const dummyItemList = res.payload;
+      clientSocket.emit('shoppingListItem:list', (response) => {
+        expect(response.status).toBe('success');
+        const dummyItemList = response.payload;
         expect(dummyItemList).toHaveLength(3);
         expect(dummyItemList).toEqual(
           expect.arrayContaining([dummyItem3, dummyItem1, dummyItem2]),
@@ -253,9 +261,9 @@ describe('Shopping list management', () => {
           throw new Error(dummyErrorMessage);
         });
 
-      clientSocket.emit('shoppingListItem:list', (res) => {
-        expect(res.status).toBe('error');
-        expect(res.message).toBe(dummyErrorMessage);
+      clientSocket.emit('shoppingListItem:list', (response) => {
+        expect(response.status).toBe('error');
+        expect(response.message).toBe(dummyErrorMessage);
         done();
       });
     });
