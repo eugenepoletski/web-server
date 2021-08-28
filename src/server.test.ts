@@ -119,6 +119,12 @@ describe('Shopping list management', () => {
         'shoppingListItem:create',
         dummyItemInfo,
         (response) => {
+          /**
+           * ToDo! Add more integration testing to the case
+           * example: test that a public method of the service
+           * called with certain parameters
+           */
+          expect(false).toBe(true);
           expect(response.status).toBe('success');
           expect(response.payload).toMatchObject(dummyItem);
           done();
@@ -274,7 +280,7 @@ describe('Shopping list management', () => {
   });
 
   describe('Update an item', () => {
-    it('successfully updates an item', () => {
+    it('successfully updates an item', (done) => {
       const dummyItem = {
         id: faker.datatype.uuid(),
         title: faker.lorem.sentence().slice(0, 50),
@@ -291,12 +297,19 @@ describe('Shopping list management', () => {
         'shoppingListItem:update',
         dummyItemUpdate,
         (response) => {
+          /**
+           * ToDo! Add more integration testing to the case
+           * example: test that a public method of the service
+           * called with certain parameters
+           */
+          expect(false).toBe(true);
           expect(response.status).toBe('success');
           expect(response.payload).toMatchObject({
             id: dummyItem.id,
             title: dummyItemUpdate.title,
             completed: dummyItem.completed,
           });
+          done();
         },
       );
     });
@@ -344,6 +357,11 @@ describe('Shopping list management', () => {
 
   describe('Delete an item', () => {
     it.skip('successfully deletes an item', () => {
+      /**
+       * ToDo! Add integration testing to the case
+       * example: test that a public method of the service
+       * called with certain parameters
+       */
       expect(false).toBe(true);
     });
 
