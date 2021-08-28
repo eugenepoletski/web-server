@@ -261,19 +261,32 @@ describe('Shopping list management', () => {
     });
   });
 
-  describe.skip('Update an item', () => {
+  describe('Update an item', () => {
     it('successfully updates an item', () => {
       const dummyItem = {
         id: faker.datatype.uuid(),
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       };
-      const dummyUpdate = { title: faker.lorem.sentence().slice(0, 50) };
+      const dummyItemUpdate = { title: faker.lorem.sentence().slice(0, 50) };
       jest
         .spyOn(mockedShoppingListService, 'updateItem')
         .mockImplementationOnce(() => {
-          Promise.resolve({ ...dummyItem, ...dummyUpdate });
+          Promise.resolve({ ...dummyItem, ...dummyItemUpdate });
         });
+
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemUpdate,
+        (response) => {
+          expect(response.status).toBe('success');
+          expect(response.payload).toMatchObject({
+            id: dummyItem.id,
+            title: dummyItemUpdate.title,
+            completed: dummyItem.completed,
+          });
+        },
+      );
     });
   });
 });
