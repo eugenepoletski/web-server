@@ -13,7 +13,7 @@ export interface Item {
 }
 
 export interface Service {
-  create(itemInfo: Json): Promise<Item>;
+  createItem(itemInfo: Json): Promise<Item>;
   findAll(): Promise<Item[]>;
   isValidationError(obj: any): boolean;
 }
@@ -79,7 +79,7 @@ export class Server {
         }
 
         try {
-          const item = await this.shoppingListService.create({
+          const item = await this.shoppingListService.createItem({
             title: payload.title,
             completed: payload.completed,
           });

@@ -29,7 +29,7 @@ describe('Shopping List service', () => {
         completed: faker.datatype.boolean(),
       };
 
-      const resultItem = await shoppingListService.create(dummyItem);
+      const resultItem = await shoppingListService.createItem(dummyItem);
 
       expect(typeof resultItem.id === 'string').toBe(true);
       expect(resultItem.title).toBe(dummyItem.title);
@@ -48,7 +48,7 @@ describe('Shopping List service', () => {
         completed: faker.datatype.boolean(),
       };
 
-      shoppingListService.create(dummyItem).catch((err) => {
+      shoppingListService.createItem(dummyItem).catch((err) => {
         expect(err).toHaveProperty('error');
         expect(err.error).toHaveProperty('details');
         expect(err.error.details).toEqual(
@@ -68,12 +68,12 @@ describe('Shopping List service', () => {
 
   describe('Retrieve items list', () => {
     it('should return a list of entities', async () => {
-      const createdItem1 = await shoppingListService.create({
+      const createdItem1 = await shoppingListService.createItem({
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       });
 
-      const createdItem2 = await shoppingListService.create({
+      const createdItem2 = await shoppingListService.createItem({
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       });
@@ -87,7 +87,7 @@ describe('Shopping List service', () => {
 
   describe('Retrieve an item by id', () => {
     it('shouldfind and return an item by its id', async () => {
-      const dummyItem = await shoppingListService.create({
+      const dummyItem = await shoppingListService.createItem({
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       });
@@ -100,7 +100,7 @@ describe('Shopping List service', () => {
 
   describe('Update an item', () => {
     it('should update item title', async () => {
-      const oldDummyItem = await shoppingListService.create({
+      const oldDummyItem = await shoppingListService.createItem({
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       });

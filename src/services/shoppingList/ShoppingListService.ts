@@ -37,7 +37,7 @@ export class ShoppingListService {
     cb();
   }
 
-  public create(itemInfo: {
+  public createItem(itemInfo: {
     title: string;
     completed: boolean;
   }): Promise<Item> {

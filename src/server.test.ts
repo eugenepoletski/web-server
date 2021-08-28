@@ -11,7 +11,7 @@ const mockedLogger = {
 };
 
 class MockedShoppingListService {
-  public create() {
+  public createItem() {
     jest.fn();
   }
 
@@ -20,6 +20,10 @@ class MockedShoppingListService {
   }
 
   public isValidationError() {
+    jest.fn();
+  }
+
+  public updateItem() {
     jest.fn();
   }
 }
@@ -94,7 +98,7 @@ describe('Shopping list management', () => {
     });
   });
 
-  describe('Create a shopping list item', () => {
+  describe('Create an item', () => {
     it('should create an item entity successfully', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
@@ -108,7 +112,7 @@ describe('Shopping list management', () => {
       };
 
       jest
-        .spyOn(mockedShoppingListService, 'create')
+        .spyOn(mockedShoppingListService, 'createItem')
         .mockImplementationOnce(() => Promise.resolve(dummyItem));
 
       clientSocket.emit('shoppingListItem:create', dummyItemInfo, (res) => {
@@ -154,7 +158,7 @@ describe('Shopping list management', () => {
       };
 
       jest
-        .spyOn(mockedShoppingListService, 'create')
+        .spyOn(mockedShoppingListService, 'createItem')
         .mockImplementationOnce(() => Promise.reject(dummyValidationError));
 
       jest
@@ -181,7 +185,7 @@ describe('Shopping list management', () => {
       const dummyErrorMessage = faker.lorem.word(3).slice(0, 50);
 
       jest
-        .spyOn(mockedShoppingListService, 'create')
+        .spyOn(mockedShoppingListService, 'createItem')
         .mockImplementationOnce(() => {
           throw new Error(dummyErrorMessage);
         });
@@ -198,7 +202,7 @@ describe('Shopping list management', () => {
     });
   });
 
-  describe('Return list of items', () => {
+  describe('List items', () => {
     it('should return a list of items', (done) => {
       const dummyItem1 = {
         id: faker.datatype.uuid(),
@@ -254,6 +258,22 @@ describe('Shopping list management', () => {
         expect(res.message).toBe(dummyErrorMessage);
         done();
       });
+    });
+  });
+
+  describe.skip('Update an item', () => {
+    it('successfully updates an item', () => {
+      const dummyItem = {
+        id: faker.datatype.uuid(),
+        title: faker.lorem.sentence().slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+      const dummyUpdate = { title: faker.lorem.sentence().slice(0, 50) };
+      jest
+        .spyOn(mockedShoppingListService, 'updateItem')
+        .mockImplementationOnce(() => {
+          Promise.resolve({ ...dummyItem, ...dummyUpdate });
+        });
     });
   });
 });
