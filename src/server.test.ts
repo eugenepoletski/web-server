@@ -42,7 +42,7 @@ describe('Server', () => {
   });
 
   describe('start a server', () => {
-    it('should start on a port', async () => {
+    it('starts on a certain port', async () => {
       await server.start();
 
       expect((server.address() as AddressInfo).port).toBe(3001);
@@ -50,7 +50,7 @@ describe('Server', () => {
       await server.stop();
     });
 
-    it('should invoke a callback', async () => {
+    it('invokes a callback', async () => {
       const mockCb = jest.fn();
 
       await server.start(mockCb);
@@ -62,7 +62,7 @@ describe('Server', () => {
   });
 
   describe('stop a server', () => {
-    it('should invoke a callback', async () => {
+    it('invokes a callback', async () => {
       const mockCb = jest.fn();
 
       await server.start();
@@ -99,7 +99,7 @@ describe('Shopping list management', () => {
   });
 
   describe('Create an item', () => {
-    it('should create an item entity successfully', (done) => {
+    it('successfully creates a valid item', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -126,7 +126,7 @@ describe('Shopping list management', () => {
       );
     });
 
-    it('should disconnect if callback is missing', (done) => {
+    it('disconnects if a callback is missing', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -138,8 +138,7 @@ describe('Shopping list management', () => {
       });
     });
 
-    it(`should return an error of type "fail" with faulty item property name
-      and a message if item validation failed`, (done) => {
+    it('rejects to create an item with an invalid property and reports reasons', (done) => {
       const dummyItem = {
         title: '',
         completed: faker.datatype.boolean(),
@@ -180,7 +179,7 @@ describe('Shopping list management', () => {
       });
     });
 
-    it('should return an error of type "error" with a message for exceptions', (done) => {
+    it('reports an error if an unexpected error occured', (done) => {
       const dummtItemInfo = {
         title: faker.lorem.word(3).slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -211,7 +210,7 @@ describe('Shopping list management', () => {
   });
 
   describe('List items', () => {
-    it('should return a list of items', (done) => {
+    it('successfully returns a list of items', (done) => {
       const dummyItem1 = {
         id: faker.datatype.uuid(),
         title: faker.lorem.words(3).slice(0, 50),
@@ -245,14 +244,14 @@ describe('Shopping list management', () => {
       });
     });
 
-    it('should disconnect if callback is missing', (done) => {
+    it('disconnects if a callback is missing', (done) => {
       clientSocket.emit('shoppingListItem:list');
       clientSocket.on('disconnect', () => {
         done();
       });
     });
 
-    it('should return an error of type "error" with a message for exceptions', (done) => {
+    it('reports an error if an unexpected error occured', (done) => {
       const dummyErrorMessage = faker.lorem.sentence();
 
       jest
