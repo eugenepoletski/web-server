@@ -42,7 +42,8 @@ describe('Shopping List service', () => {
       expect(createdItem.completed).toBe(dummyItem.completed);
     });
 
-    it('rejects to create an item with an invalid property and reports reasons', (done) => {
+    it(`rejects to create an item with an invalid property
+      and reports reasons`, (done) => {
       const dummyItem = {
         title: '',
         completed: faker.datatype.boolean(),

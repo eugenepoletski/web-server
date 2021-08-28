@@ -193,7 +193,8 @@ export class Server {
         res();
         // eslint-disable-next-line max-len
         this.logger.info({
-          message: `shoppingListItem server stopped listening on port=${this.port}`,
+          message: `shoppingListItem server stopped listening
+            on port=${this.port}`,
         });
       });
     });
