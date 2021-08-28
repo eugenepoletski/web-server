@@ -126,7 +126,7 @@ describe('Shopping list management', () => {
       );
     });
 
-    it('disconnects if a callback is missing', (done) => {
+    it.skip('disconnects if a callback is missing', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -134,6 +134,8 @@ describe('Shopping list management', () => {
 
       clientSocket.emit('shoppingListItem:create', dummyItemInfo);
       clientSocket.on('disconnect', () => {
+        // ToDo! Add reason test here
+        expect(false).toBe(true);
         done();
       });
     });
@@ -245,9 +247,11 @@ describe('Shopping list management', () => {
       });
     });
 
-    it('disconnects if a callback is missing', (done) => {
+    it.skip('disconnects if a callback is missing', (done) => {
       clientSocket.emit('shoppingListItem:list');
       clientSocket.on('disconnect', () => {
+        // ToDo! Add reason test here
+        expect(false).toBe(true);
         done();
       });
     });
@@ -295,6 +299,66 @@ describe('Shopping list management', () => {
           });
         },
       );
+    });
+
+    it.skip('disconnects if a callback is missing', (done) => {
+      const dummyItemInfo = {
+        title: faker.lorem.words(3).slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+
+      clientSocket.emit('shoppingListItem:update', dummyItemInfo);
+      clientSocket.on('disconnect', () => {
+        // ToDo! Add reason test here
+        expect(false).toBe(true);
+        done();
+      });
+    });
+
+    it.skip(`rejects to update an item if its id is missing
+      and reports a reason`, () => {
+      expect(false).toBe(true);
+    });
+
+    it.skip(`rejects to update an item with an invalid property
+      and reports reasons`, () => {
+      expect(false).toBe(true);
+    });
+
+    it.skip('reports an error if an unexpected error occured', (done) => {
+      const dummyErrorMessage = faker.lorem.sentence();
+
+      jest
+        .spyOn(mockedShoppingListService, 'updateItem')
+        .mockImplementationOnce(() => {
+          throw new Error(dummyErrorMessage);
+        });
+
+      clientSocket.emit('shoppingListItem:update', (response) => {
+        expect(response.status).toBe('error');
+        expect(response.message).toBe(dummyErrorMessage);
+        done();
+      });
+    });
+  });
+
+  describe('Delete an item', () => {
+    it.skip('successfully deletes an item', () => {
+      expect(false).toBe(true);
+    });
+
+    it.skip('disconnects if a callback is missing and reports a reason', () => {
+      // ToDo! Add reason test here
+      expect(false).toBe(true);
+    });
+
+    it.skip(`rejects to delete an item if its id is missing
+      and reports a reason`, () => {
+      expect(false).toBe(true);
+    });
+
+    it.skip('reports an error if an unexpected error occured', () => {
+      expect(false).toBe(true);
     });
   });
 });
