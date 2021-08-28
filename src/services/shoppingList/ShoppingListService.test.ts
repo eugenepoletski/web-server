@@ -22,8 +22,8 @@ describe('Shopping List service', () => {
     });
   });
 
-  describe('Create a shopping list item entity', () => {
-    it('should create an item', async () => {
+  describe('Create an item', () => {
+    it('successfully creates an item', async () => {
       const dummyItem = {
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -42,7 +42,7 @@ describe('Shopping List service', () => {
       expect(createdItem.completed).toBe(dummyItem.completed);
     });
 
-    it('should reject if title is missing', (done) => {
+    it('rejects to create an item with an invalid property and reports reasons', (done) => {
       const dummyItem = {
         title: '',
         completed: faker.datatype.boolean(),
@@ -67,7 +67,7 @@ describe('Shopping List service', () => {
   });
 
   describe('Retrieve items list', () => {
-    it('should return a list of entities', async () => {
+    it('returns a list of items', async () => {
       const createdItem1 = await shoppingListService.createItem({
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -86,7 +86,7 @@ describe('Shopping List service', () => {
   });
 
   describe('Retrieve an item by id', () => {
-    it('shouldfind and return an item by its id', async () => {
+    it('retrieves an item by its id', async () => {
       const dummyItem = await shoppingListService.createItem({
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
@@ -99,7 +99,7 @@ describe('Shopping List service', () => {
   });
 
   describe('Update an item', () => {
-    it('should update item title', async () => {
+    it('successfully updates an item', async () => {
       const oldDummyItem = await shoppingListService.createItem({
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
