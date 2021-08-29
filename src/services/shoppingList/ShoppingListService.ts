@@ -69,7 +69,7 @@ export class ShoppingListService {
     return Promise.resolve(this.items);
   }
 
-  public async update(id: string, itemUpdate: ItemUpdate): Promise<Item> {
+  public async updateItem(id: string, itemUpdate: ItemUpdate): Promise<Item> {
     const storedItem = await this.findById(id);
     // ToDo! Add whitelisting of allowed properties
     const updatedItem = { ...storedItem, ...itemUpdate };

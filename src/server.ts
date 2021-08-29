@@ -14,6 +14,7 @@ export interface Item {
 
 export interface Service {
   createItem(itemInfo: Json): Promise<Item>;
+  updateItem(itemId: string, itemUpdate: Json): Promise<Item>;
   findAll(): Promise<Item[]>;
   isValidationError(obj: any): boolean;
 }
@@ -65,10 +66,10 @@ export class Server {
         this.logger.info({ message: `disconnect socket id=${socket.id}` });
       });
 
-      socket.on('shoppingListItem:create', async (payload: Json, cb) => {
+      socket.on('shoppingListItem:create', async (itemInfo: Json, cb) => {
         // eslint-disable-next-line max-len
         this.logger.info({
-          message: `shoppingListItem:create payload=${obj2str(payload)}`,
+          message: `shoppingListItem:create itemInfo=${obj2str(itemInfo)}`,
         });
         if (typeof cb !== 'function') {
           // eslint-disable-next-line max-len
@@ -80,8 +81,8 @@ export class Server {
 
         try {
           const item = await this.shoppingListService.createItem({
-            title: payload.title,
-            completed: payload.completed,
+            title: itemInfo.title,
+            completed: itemInfo.completed,
           });
           // eslint-disable-next-line max-len
           this.logger.info({
@@ -162,6 +163,43 @@ export class Server {
           });
         }
       });
+
+      socket.on(
+        'shoppingListItem:update',
+        async (itemId: string, itemUpdate: Json, cb: any) => {
+          // eslint-disable-next-line max-len
+          this.logger.info({
+            // eslint-disable-next-line max-len
+            message: `shoppingListItem:update itemId=${itemId} itemUpdate=${obj2str(
+              itemUpdate,
+            )}`,
+          });
+
+          if (typeof cb !== 'function') {
+            // eslint-disable-next-line max-len
+            this.logger.debug({
+              message: 'shoppingListItem:update missing callback',
+            });
+            return socket.disconnect();
+          }
+
+          try {
+            const updatedItem = await this.shoppingListService.updateItem(
+              itemId,
+              itemUpdate,
+            );
+
+            cb({
+              status: 'success',
+              payload: {
+                id: updatedItem.id,
+                title: updatedItem.title,
+                completed: updatedItem.completed,
+              },
+            });
+          } catch (err) {}
+        },
+      );
     });
   }
 

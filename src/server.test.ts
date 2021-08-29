@@ -92,6 +92,7 @@ describe('Shopping list management', () => {
 
   afterEach((done) => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
     clientSocket.close();
     server.stop(() => {
       done();
@@ -99,6 +100,23 @@ describe('Shopping list management', () => {
   });
 
   describe('Create an item', () => {
+    it(`calls the service method createItem
+      with certain parameters`, (done) => {
+      const dummtItemInfo = {
+        title: faker.lorem.sentence().slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+      const createItemSpy = jest
+        .spyOn(mockedShoppingListService, 'createItem')
+        .mockImplementationOnce(() => Promise.resolve({}));
+
+      clientSocket.emit('shoppingListItem:create', dummtItemInfo, () => {
+        expect(createItemSpy).toHaveBeenCalledTimes(1);
+        expect(createItemSpy).toHaveBeenCalledWith(dummtItemInfo);
+        done();
+      });
+    });
+
     it('successfully creates a valid item', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
@@ -119,12 +137,6 @@ describe('Shopping list management', () => {
         'shoppingListItem:create',
         dummyItemInfo,
         (response) => {
-          /**
-           * ToDo! Add more integration testing to the case
-           * example: test that a public method of the service
-           * called with certain parameters
-           */
-          expect(false).toBe(true);
           expect(response.status).toBe('success');
           expect(response.payload).toMatchObject(dummyItem);
           done();
@@ -132,16 +144,15 @@ describe('Shopping list management', () => {
       );
     });
 
-    it.skip('disconnects if a callback is missing', (done) => {
+    it('disconnects if a callback is missing', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
 
       clientSocket.emit('shoppingListItem:create', dummyItemInfo);
+
       clientSocket.on('disconnect', () => {
-        // ToDo! Add reason test here
-        expect(false).toBe(true);
         done();
       });
     });
@@ -253,11 +264,9 @@ describe('Shopping list management', () => {
       });
     });
 
-    it.skip('disconnects if a callback is missing', (done) => {
+    it('disconnects if a callback is missing', (done) => {
       clientSocket.emit('shoppingListItem:list');
       clientSocket.on('disconnect', () => {
-        // ToDo! Add reason test here
-        expect(false).toBe(true);
         done();
       });
     });
@@ -280,6 +289,29 @@ describe('Shopping list management', () => {
   });
 
   describe('Update an item', () => {
+    it(`calls the service method updateItem
+      with certain parameters`, (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      const dummyItemUpdate = { title: faker.lorem.sentence().slice(0, 50) };
+      const updateItemSpy = jest
+        .spyOn(mockedShoppingListService, 'updateItem')
+        .mockImplementationOnce(() => Promise.resolve({}));
+
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemId,
+        dummyItemUpdate,
+        () => {
+          expect(updateItemSpy).toHaveBeenCalledTimes(1);
+          expect(updateItemSpy).toHaveBeenCalledWith(
+            dummyItemId,
+            dummyItemUpdate,
+          );
+          done();
+        },
+      );
+    });
+
     it('successfully updates an item', (done) => {
       const dummyItem = {
         id: faker.datatype.uuid(),
@@ -289,20 +321,15 @@ describe('Shopping list management', () => {
       const dummyItemUpdate = { title: faker.lorem.sentence().slice(0, 50) };
       jest
         .spyOn(mockedShoppingListService, 'updateItem')
-        .mockImplementationOnce(() => {
-          Promise.resolve({ ...dummyItem, ...dummyItemUpdate });
-        });
+        .mockImplementationOnce(() =>
+          Promise.resolve({ ...dummyItem, ...dummyItemUpdate }),
+        );
 
       clientSocket.emit(
         'shoppingListItem:update',
+        dummyItem.id,
         dummyItemUpdate,
         (response) => {
-          /**
-           * ToDo! Add more integration testing to the case
-           * example: test that a public method of the service
-           * called with certain parameters
-           */
-          expect(false).toBe(true);
           expect(response.status).toBe('success');
           expect(response.payload).toMatchObject({
             id: dummyItem.id,
@@ -314,16 +341,16 @@ describe('Shopping list management', () => {
       );
     });
 
-    it.skip('disconnects if a callback is missing', (done) => {
+    it('disconnects if a callback is missing', (done) => {
+      const dummyItemId = faker.datatype.uuid();
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
 
-      clientSocket.emit('shoppingListItem:update', dummyItemInfo);
+      clientSocket.emit('shoppingListItem:update', dummyItemId, dummyItemInfo);
+
       clientSocket.on('disconnect', () => {
-        // ToDo! Add reason test here
-        expect(false).toBe(true);
         done();
       });
     });
@@ -365,7 +392,7 @@ describe('Shopping list management', () => {
       expect(false).toBe(true);
     });
 
-    it.skip('disconnects if a callback is missing and reports a reason', () => {
+    it.skip('disconnects if a callback is missing', () => {
       // ToDo! Add reason test here
       expect(false).toBe(true);
     });

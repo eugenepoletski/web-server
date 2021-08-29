@@ -107,7 +107,7 @@ describe('Shopping List service', () => {
       });
       const newDummyTitle = faker.lorem.sentence().slice(0, 50);
 
-      const updatedDummyItem = await shoppingListService.update(
+      const updatedDummyItem = await shoppingListService.updateItem(
         oldDummyItem.id,
         { title: newDummyTitle },
       );
