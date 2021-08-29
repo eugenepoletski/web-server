@@ -1,7 +1,18 @@
 import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
-import faker from 'faker';
+import faker, { lorem } from 'faker';
 import { Server, Service } from './server';
+
+// eslint-disable-next-line max-len
+// @see https://github.com/socketio/socket.io/blob/master/examples/basic-crud-application/server/test/todo-management/todo.tests.ts
+const createPartialDone = (count: number, done: () => void) => {
+  let i = 0;
+  return () => {
+    if (++i === count) {
+      done();
+    }
+  };
+};
 
 const mockedLogger = {
   info: jest.fn(),
@@ -355,17 +366,99 @@ describe('Shopping list management', () => {
       });
     });
 
-    it.skip(`rejects to update an item if its id is missing
-      and reports a reason`, () => {
-      expect(false).toBe(true);
+    it(`rejects to update an item if its id is missing
+      and reports a reason`, (done) => {
+      const partialDone = createPartialDone(3, done);
+
+      let dummyItemId = undefined;
+      const dummyItemUpdate = { title: faker.lorem.sentence().slice(0, 50) };
+
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemId,
+        dummyItemUpdate,
+        (response) => {
+          expect(response.status).toBe('fail');
+          expect(response.payload).toMatchObject({
+            itemId: expect.any(String),
+          });
+          partialDone();
+        },
+      );
+
+      dummyItemId = null;
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemId,
+        dummyItemUpdate,
+        (response) => {
+          expect(response.status).toBe('fail');
+          expect(response.payload).toMatchObject({
+            itemId: expect.any(String),
+          });
+          partialDone();
+        },
+      );
+
+      dummyItemId = '';
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemId,
+        dummyItemUpdate,
+        (response) => {
+          expect(response.status).toBe('fail');
+          expect(response.payload).toMatchObject({
+            itemId: expect.any(String),
+          });
+          partialDone();
+        },
+      );
     });
 
-    it.skip(`rejects to update an item with an invalid property
-      and reports reasons`, () => {
-      expect(false).toBe(true);
+    it(`rejects to update an item with an invalid property
+      and reports reasons`, (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      const dummyItemUpdate = { title: '' };
+      const dummyErrorMessage = faker.lorem.sentence();
+
+      const dummyValidationError = {
+        error: {
+          details: [
+            {
+              message: dummyErrorMessage,
+              context: {
+                key: 'title',
+              },
+            },
+          ],
+        },
+      };
+
+      jest
+        .spyOn(mockedShoppingListService, 'updateItem')
+        .mockImplementationOnce(() => Promise.reject(dummyValidationError));
+
+      jest
+        .spyOn(mockedShoppingListService, 'isValidationError')
+        .mockImplementationOnce(() => true);
+
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemId,
+        dummyItemUpdate,
+        (response) => {
+          expect(response.status).toBe('fail');
+          expect(response.payload).toMatchObject({
+            title: dummyErrorMessage,
+          });
+          done();
+        },
+      );
     });
 
-    it.skip('reports an error if an unexpected error occured', (done) => {
+    it('reports an error if an unexpected error occured', (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      const dummyItemUpdate = faker.lorem.sentence().slice(0, 50);
       const dummyErrorMessage = faker.lorem.sentence();
 
       jest
@@ -374,11 +467,16 @@ describe('Shopping list management', () => {
           throw new Error(dummyErrorMessage);
         });
 
-      clientSocket.emit('shoppingListItem:update', (response) => {
-        expect(response.status).toBe('error');
-        expect(response.message).toBe(dummyErrorMessage);
-        done();
-      });
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemId,
+        dummyItemUpdate,
+        (response) => {
+          expect(response.status).toBe('error');
+          expect(response.message).toBe(dummyErrorMessage);
+          done();
+        },
+      );
     });
   });
 

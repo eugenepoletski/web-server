@@ -183,6 +183,18 @@ export class Server {
             return socket.disconnect();
           }
 
+          if (!itemId) {
+            this.logger.warn({
+              message: `shoppingListItem:update invalid itemId=${itemId}`,
+            });
+            return cb({
+              status: 'fail',
+              payload: {
+                itemId: `invalid itemId=${itemId}`,
+              },
+            });
+          }
+
           try {
             const updatedItem = await this.shoppingListService.updateItem(
               itemId,
@@ -197,7 +209,40 @@ export class Server {
                 completed: updatedItem.completed,
               },
             });
-          } catch (err) {}
+          } catch (err) {
+            const payload = {};
+
+            if (this.shoppingListService.isValidationError(err)) {
+              const validationError: ServiceValidationError = err;
+
+              for (const {
+                message,
+                context: { key },
+              } of validationError.error.details) {
+                payload[key] = message;
+              }
+
+              // eslint-disable-next-line max-len
+              this.logger.warn({
+                message: `shoppingListItem:update fail reason=${obj2str(
+                  payload,
+                )}`,
+              });
+              return cb({
+                status: 'fail',
+                payload,
+              });
+            }
+
+            // eslint-disable-next-line max-len
+            this.logger.error({
+              message: `shoppingListItem:update error ${obj2str(err)}`,
+            });
+            cb({
+              status: 'error',
+              message: err.message,
+            });
+          }
         },
       );
     });
