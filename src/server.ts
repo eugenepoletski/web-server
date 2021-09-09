@@ -17,6 +17,7 @@ export interface Service {
   updateItem(itemId: string, itemUpdate: Json): Promise<Item>;
   findAll(): Promise<Item[]>;
   isValidationError(obj: any): boolean;
+  validateNewItem(newItemInfo: any): any;
 }
 
 interface ServerConfig {
@@ -59,11 +60,13 @@ export class Server {
     this.ioServer.on('connection', (socket: Socket) => {
       // eslint-disable-next-line max-len
       this.logger.info({
-        message: `connection socket id=${socket.id}`,
+        message: `shoppingListItem connection socket id=${socket.id}`,
       });
 
       socket.on('disconnect', () => {
-        this.logger.info({ message: `disconnect socket id=${socket.id}` });
+        this.logger.info({
+          message: `shoppingListItem disconnect socket id=${socket.id}`,
+        });
       });
 
       socket.on('shoppingListItem:create', async (itemInfo: Json, cb) => {
@@ -77,6 +80,22 @@ export class Server {
             message: 'shoppingListItem:create missing callback',
           });
           return socket.disconnect();
+        }
+
+        const validationReport =
+          this.shoppingListService.validateNewItem(itemInfo);
+
+        if (validationReport.error) {
+          this.logger.warn({
+            message: `shoppingListItem:create fail reason=${obj2str(
+              validationReport.error.errors,
+            )}`,
+          });
+
+          return cb({
+            status: 'fail',
+            payload: validationReport.error.errors,
+          });
         }
 
         try {
@@ -97,31 +116,6 @@ export class Server {
             },
           });
         } catch (err: any) {
-          const payload = {};
-
-          if (this.shoppingListService.isValidationError(err)) {
-            const validationError: ServiceValidationError = err;
-
-            for (const {
-              message,
-              context: { key },
-            } of validationError.error.details) {
-              payload[key] = message;
-            }
-
-            // eslint-disable-next-line max-len
-            this.logger.warn({
-              message: `shoppingListItem:create fail reason=${obj2str(
-                payload,
-              )}`,
-            });
-
-            return cb({
-              status: 'fail',
-              payload,
-            });
-          }
-
           // eslint-disable-next-line max-len
           this.logger.error({
             message: `shoppingListItem:create error ${obj2str(err)}`,

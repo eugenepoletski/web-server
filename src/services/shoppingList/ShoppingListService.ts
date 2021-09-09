@@ -1,5 +1,27 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Schema } from 'joi';
+import { newItemSchema } from './schemas/ShoppingListItemSchema';
+import { buildValidationReport } from './utils';
+
+interface ValidationError extends Error {
+  errors: {
+    [key: string]: {
+      message: string;
+    };
+  };
+}
+
+class ValidationError extends Error implements ValidationError {
+  constructor(errors, ...params) {
+    super(...params);
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ValidationError);
+    }
+
+    this.name = 'ValidationError';
+    this.errors = errors;
+  }
+}
 
 interface Item {
   id: string;
@@ -7,26 +29,32 @@ interface Item {
   completed: boolean;
 }
 
+interface NewItemInfo {
+  title: string;
+  completed?: boolean;
+}
+
 interface ItemUpdate {
   title?: string;
   completed?: boolean;
 }
 
+interface ValidationReport {
+  error: {
+    errors: {
+      [key: string]: {
+        message: string;
+      };
+    };
+  };
+}
+
 export class ShoppingListService {
   private items: Item[];
-  private shoppingListItemSchema: Schema;
   public isValidationError: (obj: any) => boolean;
 
-  constructor({
-    isValidationError,
-    shoppingListItemSchema,
-  }: {
-    isValidationError: (obj: any) => boolean;
-    shoppingListItemSchema: Schema;
-  }) {
+  constructor() {
     this.items = [];
-    this.shoppingListItemSchema = shoppingListItemSchema;
-    this.isValidationError = isValidationError;
   }
 
   public start(cb: () => void): void {
@@ -41,13 +69,13 @@ export class ShoppingListService {
     title: string;
     completed: boolean;
   }): Promise<Item> {
-    const validationReport = this.shoppingListItemSchema.validate({
+    const validationReport = this.validateNewItem({
       title: itemInfo.title,
       completed: itemInfo.completed,
     });
 
-    if (this.isValidationError(validationReport)) {
-      return Promise.reject(validationReport);
+    if (validationReport.error) {
+      return Promise.reject(new ValidationError(validationReport.error.errors));
     }
 
     const item = {
@@ -71,8 +99,8 @@ export class ShoppingListService {
 
   public async updateItem(id: string, itemUpdate: ItemUpdate): Promise<Item> {
     const storedItem = await this.findById(id);
-    // ToDo! Add whitelisting of allowed properties
     const updatedItem = { ...storedItem, ...itemUpdate };
+
     const nextItems = this.items.map((item) => {
       if (item.id !== id) {
         return item;
@@ -82,5 +110,10 @@ export class ShoppingListService {
     });
     this.items = nextItems;
     return Promise.resolve(updatedItem);
+  }
+
+  public validateNewItem(newItemInfo: NewItemInfo): ValidationReport {
+    const result = newItemSchema.validate(newItemInfo);
+    return buildValidationReport(result);
   }
 }

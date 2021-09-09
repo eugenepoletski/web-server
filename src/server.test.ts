@@ -1,6 +1,6 @@
 import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
-import faker, { lorem } from 'faker';
+import faker from 'faker';
 import { Server, Service } from './server';
 
 // eslint-disable-next-line max-len
@@ -35,6 +35,10 @@ class MockedShoppingListService {
   }
 
   public updateItem() {
+    jest.fn();
+  }
+
+  public validateNewItem() {
     jest.fn();
   }
 }
@@ -117,6 +121,9 @@ describe('Shopping list management', () => {
         title: faker.lorem.sentence().slice(0, 50),
         completed: faker.datatype.boolean(),
       };
+      jest
+        .spyOn(mockedShoppingListService, 'validateNewItem')
+        .mockImplementationOnce(() => ({}));
       const createItemSpy = jest
         .spyOn(mockedShoppingListService, 'createItem')
         .mockImplementationOnce(() => Promise.resolve({}));
@@ -133,13 +140,14 @@ describe('Shopping list management', () => {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
-
       const dummyItem = {
         id: faker.datatype.uuid(),
         title: dummyItemInfo.title,
         completed: dummyItemInfo.completed,
       };
-
+      jest
+        .spyOn(mockedShoppingListService, 'validateNewItem')
+        .mockImplementationOnce(() => ({}));
       jest
         .spyOn(mockedShoppingListService, 'createItem')
         .mockImplementationOnce(() => Promise.resolve(dummyItem));
@@ -170,44 +178,37 @@ describe('Shopping list management', () => {
 
     it(`rejects to create an item with an invalid property
       and reports reasons`, (done) => {
-      const dummyItem = {
+      const dummyInvalidItemInfo = {
         title: '',
         completed: faker.datatype.boolean(),
       };
-
-      const dummyErrorMessage = faker.lorem.sentence();
-      const dummyItemInvalidPropertyName = faker.datatype.string();
-
-      const dummyValidationError = {
-        error: {
-          details: [
-            {
-              message: dummyErrorMessage,
-              context: {
-                key: dummyItemInvalidPropertyName,
-              },
+      const validateNewItemSpy = jest
+        .spyOn(mockedShoppingListService, 'validateNewItem')
+        .mockImplementationOnce(() => ({
+          error: {
+            errors: {
+              title: faker.lorem.sentence(),
             },
-          ],
+          },
+        }));
+      const createItemSpy = jest.spyOn(mockedShoppingListService, 'createItem');
+
+      clientSocket.emit(
+        'shoppingListItem:create',
+        dummyInvalidItemInfo,
+        (response) => {
+          expect(response.status).toBe('fail');
+          expect(response.payload).toMatchObject({
+            title: expect.any(String),
+          });
+          expect(validateNewItemSpy).toHaveBeenLastCalledWith(
+            dummyInvalidItemInfo,
+          );
+          expect(validateNewItemSpy).toHaveBeenCalledTimes(1);
+          expect(createItemSpy).not.toHaveBeenCalled();
+          done();
         },
-      };
-
-      jest
-        .spyOn(mockedShoppingListService, 'createItem')
-        .mockImplementationOnce(() => Promise.reject(dummyValidationError));
-
-      jest
-        .spyOn(mockedShoppingListService, 'isValidationError')
-        .mockImplementationOnce(() => true);
-
-      clientSocket.emit('shoppingListItem:create', dummyItem, (response) => {
-        expect(response.status).toBe('fail');
-        expect(response.payload).toEqual(
-          expect.objectContaining({
-            [dummyItemInvalidPropertyName]: dummyErrorMessage,
-          }),
-        );
-        done();
-      });
+      );
     });
 
     it('reports an error if an unexpected error occured', (done) => {
@@ -215,18 +216,15 @@ describe('Shopping list management', () => {
         title: faker.lorem.word(3).slice(0, 50),
         completed: faker.datatype.boolean(),
       };
-
       const dummyErrorMessage = faker.lorem.word(3).slice(0, 50);
-
+      jest
+        .spyOn(mockedShoppingListService, 'validateNewItem')
+        .mockImplementationOnce(() => ({}));
       jest
         .spyOn(mockedShoppingListService, 'createItem')
         .mockImplementationOnce(() => {
           throw new Error(dummyErrorMessage);
         });
-
-      jest
-        .spyOn(mockedShoppingListService, 'isValidationError')
-        .mockImplementationOnce(() => false);
 
       clientSocket.emit(
         'shoppingListItem:create',
