@@ -57,14 +57,6 @@ export class ShoppingListService {
     this.items = [];
   }
 
-  public start(cb: () => void): void {
-    cb();
-  }
-
-  public stop(cb: () => void): void {
-    cb();
-  }
-
   public createItem(itemInfo: {
     title: string;
     completed: boolean;
