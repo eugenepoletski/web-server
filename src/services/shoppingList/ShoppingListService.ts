@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { newItemSchema } from './schemas/NewItemSchema';
+import { newItemSchema } from './schemas/newItemSchema';
 import { buildValidationReport } from './utils';
 
 interface ValidationError extends Error {
