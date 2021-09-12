@@ -14,13 +14,15 @@ export interface Item {
 
 export interface ItemUpdate {
   title?: string;
-  completed?: string;
+  completed?: boolean;
 }
 
 export interface ValidationReport {
   error?: {
     errors: {
-      [key: string]: string;
+      [key: string]: {
+        message: string;
+      };
     };
   };
 }

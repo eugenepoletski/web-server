@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { newItemSchema } from './schemas/newItemSchema';
+import { newItemSchema, itemUpdateSchema } from './schemas';
 import { buildValidationReport } from './utils';
 
 interface ValidationError extends Error {
@@ -22,21 +22,23 @@ class ValidationError extends Error implements ValidationError {
     this.errors = errors;
   }
 }
+type ItemTitle = string;
+type ItemCompleted = boolean;
 
 interface Item {
   id: string;
-  title: string;
-  completed: boolean;
+  title: ItemTitle;
+  completed: ItemCompleted;
 }
 
 interface NewItemInfo {
-  title: string;
-  completed?: boolean;
+  title: ItemTitle;
+  completed?: ItemCompleted;
 }
 
-interface ItemUpdate {
-  title?: string;
-  completed?: boolean;
+interface ItemUpdateInfo {
+  title?: ItemTitle;
+  completed?: ItemCompleted;
 }
 
 interface ValidationReport {
@@ -88,7 +90,10 @@ export class ShoppingListService {
     return Promise.resolve(this.items);
   }
 
-  public async updateItem(id: string, itemUpdate: ItemUpdate): Promise<Item> {
+  public async updateItem(
+    id: string,
+    itemUpdate: ItemUpdateInfo,
+  ): Promise<Item> {
     const storedItem = await this.findItemById(id);
     const updatedItem = { ...storedItem, ...itemUpdate };
 
@@ -105,6 +110,11 @@ export class ShoppingListService {
 
   public validateNewItem(newItemInfo: NewItemInfo): ValidationReport {
     const result = newItemSchema.validate(newItemInfo);
+    return buildValidationReport(result);
+  }
+
+  public validateItemUpdate(itemUpdateInfo: ItemUpdateInfo): ValidationReport {
+    const result = itemUpdateSchema.validate(itemUpdateInfo);
     return buildValidationReport(result);
   }
 }
