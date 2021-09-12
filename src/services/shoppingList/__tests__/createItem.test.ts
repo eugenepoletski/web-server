@@ -41,5 +41,9 @@ describe('ShoppingListService', () => {
         done();
       });
     });
+
+    it.skip(`defaults to completed=false if omitted`, () => {
+      expect(false).toBe(true);
+    });
   });
 });
