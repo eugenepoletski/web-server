@@ -93,7 +93,13 @@ export class ShoppingListService {
   public async updateItem(
     id: string,
     itemUpdate: ItemUpdateInfo,
-  ): Promise<Item> {
+  ): Promise<Item | ValidationError> {
+    const validationReport = this.validateItemUpdate(itemUpdate);
+
+    if (validationReport.error) {
+      return Promise.reject(new ValidationError(validationReport.error.errors));
+    }
+
     const storedItem = await this.findItemById(id);
     const updatedItem = { ...storedItem, ...itemUpdate };
 
