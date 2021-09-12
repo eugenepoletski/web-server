@@ -3,7 +3,7 @@ export class MockedShoppingListService {
     jest.fn();
   }
 
-  public deleteITem(): any {
+  public deleteItem(): any {
     jest.fn();
   }
 
