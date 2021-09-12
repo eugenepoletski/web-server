@@ -1,2 +1,2 @@
 export { newItemSchema } from './newItemSchema';
-export { itemUpdateSchema } from './ItemUpdateSchema';
+export { itemUpdateSchema } from './itemUpdateSchema';
