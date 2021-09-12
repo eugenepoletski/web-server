@@ -101,6 +101,13 @@ export class ShoppingListService {
     }
 
     const storedItem = await this.findItemById(id);
+
+    if (!storedItem) {
+      return Promise.reject(
+        new ValidationError({ id: `item with id=${id} not found` }),
+      );
+    }
+
     const updatedItem = { ...storedItem, ...itemUpdate };
 
     const nextItems = this.items.map((item) => {
