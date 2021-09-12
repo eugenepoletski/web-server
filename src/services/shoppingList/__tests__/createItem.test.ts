@@ -17,7 +17,7 @@ describe('ShoppingListService', () => {
       expect(resultItem.title).toBe(dummyItem.title);
       expect(resultItem.completed).toBe(dummyItem.completed);
 
-      const createdItem = await shoppingListService.findById(resultItem.id);
+      const createdItem = await shoppingListService.findItemById(resultItem.id);
 
       expect(createdItem.id).toBe(resultItem.id);
       expect(createdItem.title).toBe(dummyItem.title);

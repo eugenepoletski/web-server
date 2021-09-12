@@ -51,7 +51,6 @@ interface ValidationReport {
 
 export class ShoppingListService {
   private items: Item[];
-  public isValidationError: (obj: any) => boolean;
 
   constructor() {
     this.items = [];
@@ -81,7 +80,7 @@ export class ShoppingListService {
     return Promise.resolve(item);
   }
 
-  public findById(id: string): Promise<Item> {
+  public findItemById(id: string): Promise<Item> {
     return Promise.resolve(this.items.find((item) => item.id === id));
   }
 
@@ -90,7 +89,7 @@ export class ShoppingListService {
   }
 
   public async updateItem(id: string, itemUpdate: ItemUpdate): Promise<Item> {
-    const storedItem = await this.findById(id);
+    const storedItem = await this.findItemById(id);
     const updatedItem = { ...storedItem, ...itemUpdate };
 
     const nextItems = this.items.map((item) => {

@@ -7,6 +7,6 @@
     "types": ["jest", "node"],
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts", "src/server.test.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", ".vscode"]
 }

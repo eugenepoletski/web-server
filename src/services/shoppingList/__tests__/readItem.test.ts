@@ -11,7 +11,9 @@ describe('ShoppingListService', () => {
         completed: faker.datatype.boolean(),
       });
 
-      const foundDummyItem = await shoppingListService.findById(dummyItem.id);
+      const foundDummyItem = await shoppingListService.findItemById(
+        dummyItem.id,
+      );
 
       expect(foundDummyItem).toMatchObject(dummyItem);
     });

@@ -12,12 +12,25 @@ export interface Item {
   completed: boolean;
 }
 
+export interface ItemUpdate {
+  title?: string;
+  completed?: string;
+}
+
+export interface ValidationReport {
+  error?: {
+    errors: {
+      [key: string]: string;
+    };
+  };
+}
+
 export interface Service {
   createItem(itemInfo: Json): Promise<Item>;
-  updateItem(itemId: string, itemUpdate: Json): Promise<Item>;
+  updateItem(itemId: string, itemUpdate: ItemUpdate): Promise<Item>;
   findAll(): Promise<Item[]>;
-  isValidationError(obj: any): boolean;
-  validateNewItem(newItemInfo: any): any;
+  validateNewItem(newItemInfo: any): ValidationReport;
+  validateItemUpdate(itemUpdate: ItemUpdate): ValidationReport;
 }
 
 interface ServerConfig {
@@ -26,21 +39,14 @@ interface ServerConfig {
   logger: any;
 }
 
-// ToDo! import this
-interface ServiceValidationError {
-  error: {
-    details: [];
-  };
-}
-
 const obj2str = (obj) => inspect(obj, { showHidden: false });
 
 export class Server {
   private httpServer: HttpServer;
   private ioServer: IOServer;
   private shoppingListService: Service;
-  private port: number;
   private logger: any;
+  private port: number;
 
   constructor({ port, shoppingListService, logger }: ServerConfig) {
     this.port = port;
@@ -70,12 +76,11 @@ export class Server {
       });
 
       socket.on('shoppingListItem:create', async (itemInfo: Json, cb) => {
-        // eslint-disable-next-line max-len
         this.logger.info({
           message: `shoppingListItem:create itemInfo=${obj2str(itemInfo)}`,
         });
+
         if (typeof cb !== 'function') {
-          // eslint-disable-next-line max-len
           this.logger.debug({
             message: 'shoppingListItem:create missing callback',
           });
@@ -189,6 +194,22 @@ export class Server {
             });
           }
 
+          const validationReport =
+            this.shoppingListService.validateItemUpdate(itemUpdate);
+
+          if (validationReport.error) {
+            this.logger.warn(
+              `shoppingListItem:update fail reason=${obj2str(
+                validationReport.error.errors,
+              )}`,
+            );
+
+            return cb({
+              status: 'fail',
+              payload: validationReport.error.errors,
+            });
+          }
+
           try {
             const updatedItem = await this.shoppingListService.updateItem(
               itemId,
@@ -204,31 +225,6 @@ export class Server {
               },
             });
           } catch (err) {
-            const payload = {};
-
-            if (this.shoppingListService.isValidationError(err)) {
-              const validationError: ServiceValidationError = err;
-
-              for (const {
-                message,
-                context: { key },
-              } of validationError.error.details) {
-                payload[key] = message;
-              }
-
-              // eslint-disable-next-line max-len
-              this.logger.warn({
-                message: `shoppingListItem:update fail reason=${obj2str(
-                  payload,
-                )}`,
-              });
-              return cb({
-                status: 'fail',
-                payload,
-              });
-            }
-
-            // eslint-disable-next-line max-len
             this.logger.error({
               message: `shoppingListItem:update error ${obj2str(err)}`,
             });

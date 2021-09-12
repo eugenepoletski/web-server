@@ -2,4 +2,8 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  testPathIgnorePatterns: [
+    'test_setup.ts',
+    'test_helpers.ts'
+  ],
 };
