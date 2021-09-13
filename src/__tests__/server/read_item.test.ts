@@ -73,9 +73,23 @@ describe('Server', () => {
       });
     });
 
-    it.skip(`rejects to read an item if not found
-      and reports a reason`, () => {
-      expect(false).toBe(true);
+    it(`rejects and reports a reason if an item is not found`, (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      jest
+        .spyOn(mockedShoppingListService, 'findItemById')
+        .mockImplementationOnce(() =>
+          Promise.reject(
+            new mockedShoppingListService.NotFoundError(faker.lorem.sentence()),
+          ),
+        );
+
+      clientSocket.emit('shoppingListItem:read', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({
+          itemId: expect.any(String),
+        });
+        done();
+      });
     });
 
     it.skip('reports an error if an unexpected error occured', () => {

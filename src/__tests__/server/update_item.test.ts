@@ -145,6 +145,10 @@ describe('Server', () => {
       );
     });
 
+    it.skip(`rejects to read an item if not found and reports a reason`, () => {
+      expect(false).toBe(true);
+    });
+
     it('reports an error if an unexpected error occured', (done) => {
       const dummyItemId = faker.datatype.uuid();
       const dummyItemUpdate = faker.lorem.sentence().slice(0, 50);

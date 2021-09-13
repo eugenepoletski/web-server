@@ -1,3 +1,13 @@
+class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, NotFoundError);
+    }
+    this.name = 'NotFoundError';
+  }
+}
+
 export class MockedShoppingListService {
   public createItem(): any {
     jest.fn();
@@ -26,4 +36,6 @@ export class MockedShoppingListService {
   public validateItemUpdate(): any {
     jest.fn();
   }
+
+  public NotFoundError = NotFoundError;
 }

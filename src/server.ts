@@ -34,6 +34,7 @@ export interface Service {
   findItemById(itemId: string): Promise<Item>;
   validateNewItem(newItemInfo: any): ValidationReport;
   validateItemUpdate(itemUpdate: ItemUpdate): ValidationReport;
+  NotFoundError: any;
 }
 
 interface ServerConfig {
@@ -217,6 +218,13 @@ export class Server {
               itemUpdate,
             );
 
+            this.logger.info({
+              // eslint-disable-next-line max-len
+              message: `shoppingListItem:update success item=${obj2str(
+                updatedItem,
+              )}`,
+            });
+
             cb({
               status: 'success',
               payload: {
@@ -259,12 +267,31 @@ export class Server {
           });
         }
 
-        const item = await this.shoppingListService.findItemById(itemId);
+        try {
+          const item = await this.shoppingListService.findItemById(itemId);
 
-        cb({
-          status: 'success',
-          payload: item,
-        });
+          this.logger.info({
+            // eslint-disable-next-line max-len
+            message: `shoppingListItem:read success item=${obj2str(item)}`,
+          });
+
+          cb({
+            status: 'success',
+            payload: item,
+          });
+        } catch (err) {
+          switch (true) {
+            case err instanceof this.shoppingListService.NotFoundError:
+              const reason = { itemId: `item with id=${itemId} not found` };
+              this.logger.warn(
+                `shoppingListItem:read fail reason=${obj2str(reason)}`,
+              );
+              return cb({
+                status: 'fail',
+                payload: reason,
+              });
+          }
+        }
       });
     });
   }
