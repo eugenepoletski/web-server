@@ -21,32 +21,6 @@ describe('Server', () => {
       clientSocket.close();
     });
 
-    it(`calls the service method updateItem
-      with certain parameters`, (done) => {
-      const dummyItemId = faker.datatype.uuid();
-      const dummyItemUpdate = { title: faker.lorem.sentence().slice(0, 50) };
-      jest
-        .spyOn(mockedShoppingListService, 'validateItemUpdate')
-        .mockImplementationOnce(() => ({}));
-      const updateItemSpy = jest
-        .spyOn(mockedShoppingListService, 'updateItem')
-        .mockImplementationOnce(() => Promise.resolve({}));
-
-      clientSocket.emit(
-        'shoppingListItem:update',
-        dummyItemId,
-        dummyItemUpdate,
-        () => {
-          expect(updateItemSpy).toHaveBeenCalledTimes(1);
-          expect(updateItemSpy).toHaveBeenCalledWith(
-            dummyItemId,
-            dummyItemUpdate,
-          );
-          done();
-        },
-      );
-    });
-
     it('successfully updates an item', (done) => {
       const dummyItem = {
         id: faker.datatype.uuid(),
@@ -147,7 +121,6 @@ describe('Server', () => {
       const dummyItemId = faker.datatype.uuid();
       const dummyInvalidItemUpdate = { title: '' };
       const dummyInvalidTitleMessage = faker.lorem.sentence();
-      const updateItemSpy = jest.spyOn(mockedShoppingListService, 'updateItem');
       jest
         .spyOn(mockedShoppingListService, 'validateItemUpdate')
         .mockImplementationOnce(() => ({
@@ -167,7 +140,6 @@ describe('Server', () => {
           expect(response.payload).toMatchObject({
             title: dummyInvalidTitleMessage,
           });
-          expect(updateItemSpy).not.toHaveBeenCalled();
           done();
         },
       );

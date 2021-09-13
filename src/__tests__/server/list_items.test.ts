@@ -56,6 +56,7 @@ describe('Server', () => {
 
     it('disconnects if a callback is missing', (done) => {
       clientSocket.emit('shoppingListItem:list');
+
       clientSocket.on('disconnect', () => {
         done();
       });
