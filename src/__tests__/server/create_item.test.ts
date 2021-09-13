@@ -20,26 +20,6 @@ describe('Server', () => {
       clientSocket.close();
     });
 
-    it(`calls the service method createItem
-      with certain parameters`, (done) => {
-      const dummtItemInfo = {
-        title: faker.lorem.sentence().slice(0, 50),
-        completed: faker.datatype.boolean(),
-      };
-      jest
-        .spyOn(mockedShoppingListService, 'validateNewItem')
-        .mockImplementationOnce(() => ({}));
-      const createItemSpy = jest
-        .spyOn(mockedShoppingListService, 'createItem')
-        .mockImplementationOnce(() => Promise.resolve({}));
-
-      clientSocket.emit('shoppingListItem:create', dummtItemInfo, () => {
-        expect(createItemSpy).toHaveBeenCalledTimes(1);
-        expect(createItemSpy).toHaveBeenCalledWith(dummtItemInfo);
-        done();
-      });
-    });
-
     it('successfully creates a valid item', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
@@ -87,7 +67,7 @@ describe('Server', () => {
         title: '',
         completed: faker.datatype.boolean(),
       };
-      const validateNewItemSpy = jest
+      jest
         .spyOn(mockedShoppingListService, 'validateNewItem')
         .mockImplementationOnce(() => ({
           error: {
@@ -96,7 +76,6 @@ describe('Server', () => {
             },
           },
         }));
-      const createItemSpy = jest.spyOn(mockedShoppingListService, 'createItem');
 
       clientSocket.emit(
         'shoppingListItem:create',
@@ -106,11 +85,6 @@ describe('Server', () => {
           expect(response.payload).toMatchObject({
             title: expect.any(String),
           });
-          expect(validateNewItemSpy).toHaveBeenLastCalledWith(
-            dummyInvalidItemInfo,
-          );
-          expect(validateNewItemSpy).toHaveBeenCalledTimes(1);
-          expect(createItemSpy).not.toHaveBeenCalled();
           done();
         },
       );
