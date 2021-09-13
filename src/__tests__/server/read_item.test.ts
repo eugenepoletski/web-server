@@ -1,6 +1,7 @@
 import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
+import { createPartialDone } from '../test_helpers';
 import { server, mockedShoppingListService } from './test_setup';
 
 describe('Server', () => {
@@ -46,9 +47,30 @@ describe('Server', () => {
       });
     });
 
-    it.skip(`rejects to read an item if its id is missing
-      and reports a reason`, () => {
-      expect(false).toBe(true);
+    it(`rejects to read an item if its id is missing
+      and reports a reason`, (done) => {
+      const partialDone = createPartialDone(3, done);
+      let dummyItemId = undefined;
+
+      clientSocket.emit('shoppingListItem:read', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({ itemId: expect.any(String) });
+        partialDone();
+      });
+
+      dummyItemId = null;
+      clientSocket.emit('shoppingListItem:read', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({ itemId: expect.any(String) });
+        partialDone();
+      });
+
+      dummyItemId = '';
+      clientSocket.emit('shoppingListItem:read', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({ itemId: expect.any(String) });
+        partialDone();
+      });
     });
 
     it.skip(`rejects to read an item if not found

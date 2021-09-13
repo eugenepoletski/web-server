@@ -247,6 +247,18 @@ export class Server {
           return socket.disconnect();
         }
 
+        if (!itemId) {
+          this.logger.warn({
+            message: `shoppingListItem:read invalid itemId=${itemId}`,
+          });
+          return cb({
+            status: 'fail',
+            payload: {
+              itemId: `invalid itemId=${itemId}`,
+            },
+          });
+        }
+
         const item = await this.shoppingListService.findItemById(itemId);
 
         cb({
