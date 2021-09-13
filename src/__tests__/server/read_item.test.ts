@@ -36,9 +36,14 @@ describe('Server', () => {
       });
     });
 
-    it.skip('disconnects if a callback is missing', () => {
-      // ToDo! Add reason test here
-      expect(false).toBe(true);
+    it('disconnects if a callback is missing', (done) => {
+      const dummyItemId = faker.datatype.uuid();
+
+      clientSocket.emit('shoppingListItem:read', dummyItemId);
+
+      clientSocket.on('disconnect', () => {
+        done();
+      });
     });
 
     it.skip(`rejects to read an item if its id is missing

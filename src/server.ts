@@ -169,7 +169,6 @@ export class Server {
       socket.on(
         'shoppingListItem:update',
         async (itemId: string, itemUpdate: Json, cb: any) => {
-          // eslint-disable-next-line max-len
           this.logger.info({
             // eslint-disable-next-line max-len
             message: `shoppingListItem:update itemId=${itemId} itemUpdate=${obj2str(
@@ -178,7 +177,6 @@ export class Server {
           });
 
           if (typeof cb !== 'function') {
-            // eslint-disable-next-line max-len
             this.logger.debug({
               message: 'shoppingListItem:update missing callback',
             });
@@ -240,6 +238,15 @@ export class Server {
       );
 
       socket.on('shoppingListItem:read', async (itemId: string, cb) => {
+        this.logger.info({ message: `shoppingListItem:read itemId=${itemId}` });
+
+        if (typeof cb !== 'function') {
+          this.logger.debug({
+            message: 'shoppingListItem:read missing callback',
+          });
+          return socket.disconnect();
+        }
+
         const item = await this.shoppingListService.findItemById(itemId);
 
         cb({
