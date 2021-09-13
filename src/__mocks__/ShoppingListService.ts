@@ -11,7 +11,7 @@ export class MockedShoppingListService {
     jest.fn();
   }
 
-  public findById(): any {
+  public findItemById(): any {
     jest.fn();
   }
 

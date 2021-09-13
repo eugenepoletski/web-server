@@ -1,5 +1,5 @@
 describe('Server', () => {
-  describe('Delete an item', () => {
+  describe('delete an item', () => {
     it.skip('successfully deletes an item', () => {
       expect(false).toBe(true);
     });

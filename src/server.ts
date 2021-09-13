@@ -31,6 +31,7 @@ export interface Service {
   createItem(itemInfo: Json): Promise<Item>;
   updateItem(itemId: string, itemUpdate: ItemUpdate): Promise<Item>;
   findAll(): Promise<Item[]>;
+  findItemById(itemId: string): Promise<Item>;
   validateNewItem(newItemInfo: any): ValidationReport;
   validateItemUpdate(itemUpdate: ItemUpdate): ValidationReport;
 }
@@ -237,6 +238,15 @@ export class Server {
           }
         },
       );
+
+      socket.on('shoppingListItem:read', async (itemId: string, cb) => {
+        const item = await this.shoppingListService.findItemById(itemId);
+
+        cb({
+          status: 'success',
+          payload: item,
+        });
+      });
     });
   }
 
