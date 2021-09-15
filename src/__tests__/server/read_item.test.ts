@@ -92,8 +92,21 @@ describe('Server', () => {
       });
     });
 
-    it.skip('reports an error if an unexpected error occured', () => {
-      expect(false).toBe(true);
+    it('reports an error if an unexpected error occured', (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      jest
+        .spyOn(mockedShoppingListService, 'findItemById')
+        .mockImplementationOnce(() =>
+          Promise.reject(new Error(faker.lorem.sentence())),
+        );
+
+      clientSocket.emit('shoppingListItem:read', dummyItemId, (response) => {
+        expect(response.status).toBe('error');
+        expect(response).toMatchObject({
+          message: expect.any(String),
+        });
+        done();
+      });
     });
   });
 });

@@ -290,6 +290,14 @@ export class Server {
                 status: 'fail',
                 payload: reason,
               });
+            default:
+              this.logger.error({
+                message: `shoppingListItem:read error ${obj2str(err)}`,
+              });
+              cb({
+                status: 'error',
+                message: err.message,
+              });
           }
         }
       });
