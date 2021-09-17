@@ -22,6 +22,17 @@ class ValidationError extends Error implements ValidationError {
     this.errors = errors;
   }
 }
+
+class NotFoundError extends Error implements NotFoundError {
+  constructor(message: string) {
+    super(message);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, NotFoundError);
+    }
+    this.name = 'NotFoundError';
+  }
+}
+
 type ItemTitle = string;
 type ItemCompleted = boolean;
 
@@ -93,7 +104,7 @@ export class ShoppingListService {
   public async updateItem(
     id: string,
     itemUpdate: ItemUpdateInfo,
-  ): Promise<Item | ValidationError> {
+  ): Promise<Item | never> {
     const validationReport = this.validateItemUpdate(itemUpdate);
 
     if (validationReport.error) {
@@ -130,4 +141,6 @@ export class ShoppingListService {
     const result = itemUpdateSchema.validate(itemUpdateInfo);
     return buildValidationReport(result);
   }
+
+  public NotFoundError = NotFoundError;
 }

@@ -27,9 +27,17 @@ export interface ValidationReport {
   };
 }
 
+export interface ValidationError extends Error {
+  errors: {
+    [key: string]: {
+      message: string;
+    };
+  };
+}
+
 export interface Service {
   createItem(itemInfo: Json): Promise<Item>;
-  updateItem(itemId: string, itemUpdate: ItemUpdate): Promise<Item>;
+  updateItem(itemId: string, itemUpdate: ItemUpdate): Promise<Item | never>;
   findAll(): Promise<Item[]>;
   findItemById(itemId: string): Promise<Item>;
   validateNewItem(newItemInfo: any): ValidationReport;
