@@ -3,16 +3,20 @@ import { AddressInfo } from 'net';
 import { Server as IOServer, Socket } from 'socket.io';
 import { inspect } from 'util';
 
-type Primitives = string | number | boolean | null;
-type Json = { [key: string]: Primitives | Primitives[] | Json[] | Json };
+export type ItemId = string;
 
 export interface Item {
-  id: string;
+  id: ItemId;
   title: string;
   completed: boolean;
 }
 
-export interface ItemUpdate {
+export interface NewItemInfo {
+  title: string;
+  completed?: boolean;
+}
+
+export interface ItemUpdateInfo {
   title?: string;
   completed?: boolean;
 }
@@ -27,25 +31,17 @@ export interface ValidationReport {
   };
 }
 
-export interface ValidationError extends Error {
-  errors: {
-    [key: string]: {
-      message: string;
-    };
-  };
-}
-
 export interface Service {
-  createItem(itemInfo: Json): Promise<Item>;
-  updateItem(itemId: string, itemUpdate: ItemUpdate): Promise<Item | never>;
-  findAll(): Promise<Item[]>;
-  findItemById(itemId: string): Promise<Item>;
-  validateNewItem(newItemInfo: any): ValidationReport;
-  validateItemUpdate(itemUpdate: ItemUpdate): ValidationReport;
+  createItem(newItemInfo: NewItemInfo): Promise<Item | never>;
+  updateItem(itemId: ItemId, itemUpdate: ItemUpdateInfo): Promise<Item | never>;
+  findAll(): Promise<Item[] | never>;
+  findItemById(itemId: ItemId): Promise<Item | never>;
+  validateNewItem(newItemInfo: NewItemInfo): ValidationReport;
+  validateItemUpdate(itemUpdateInfo: ItemUpdateInfo): ValidationReport;
   NotFoundError: any;
 }
 
-interface ServerConfig {
+export interface ServerConfig {
   port: number;
   shoppingListService: Service;
   logger: any;
@@ -87,62 +83,65 @@ export class Server {
         });
       });
 
-      socket.on('shoppingListItem:create', async (itemInfo: Json, cb) => {
-        this.logger.info({
-          message: `shoppingListItem:create itemInfo=${obj2str(itemInfo)}`,
-        });
-
-        if (typeof cb !== 'function') {
-          this.logger.debug({
-            message: 'shoppingListItem:create missing callback',
-          });
-          return socket.disconnect();
-        }
-
-        const validationReport =
-          this.shoppingListService.validateNewItem(itemInfo);
-
-        if (validationReport.error) {
-          this.logger.warn({
-            message: `shoppingListItem:create fail reason=${obj2str(
-              validationReport.error.errors,
-            )}`,
-          });
-
-          return cb({
-            status: 'fail',
-            payload: validationReport.error.errors,
-          });
-        }
-
-        try {
-          const item = await this.shoppingListService.createItem({
-            title: itemInfo.title,
-            completed: itemInfo.completed,
-          });
-          // eslint-disable-next-line max-len
+      socket.on(
+        'shoppingListItem:create',
+        async (itemInfo: NewItemInfo, cb) => {
           this.logger.info({
-            message: `shoppingListItem:create success item=${obj2str(item)}`,
+            message: `shoppingListItem:create itemInfo=${obj2str(itemInfo)}`,
           });
-          cb({
-            status: 'success',
-            payload: {
-              id: item.id,
-              title: item.title,
-              completed: item.completed,
-            },
-          });
-        } catch (err: any) {
-          // eslint-disable-next-line max-len
-          this.logger.error({
-            message: `shoppingListItem:create error ${obj2str(err)}`,
-          });
-          cb({
-            status: 'error',
-            message: err.message,
-          });
-        }
-      });
+
+          if (typeof cb !== 'function') {
+            this.logger.debug({
+              message: 'shoppingListItem:create missing callback',
+            });
+            return socket.disconnect();
+          }
+
+          const validationReport =
+            this.shoppingListService.validateNewItem(itemInfo);
+
+          if (validationReport.error) {
+            this.logger.warn({
+              message: `shoppingListItem:create fail reason=${obj2str(
+                validationReport.error.errors,
+              )}`,
+            });
+
+            return cb({
+              status: 'fail',
+              payload: validationReport.error.errors,
+            });
+          }
+
+          try {
+            const item = await this.shoppingListService.createItem({
+              title: itemInfo.title,
+              completed: itemInfo.completed,
+            });
+            // eslint-disable-next-line max-len
+            this.logger.info({
+              message: `shoppingListItem:create success item=${obj2str(item)}`,
+            });
+            cb({
+              status: 'success',
+              payload: {
+                id: item.id,
+                title: item.title,
+                completed: item.completed,
+              },
+            });
+          } catch (err: any) {
+            // eslint-disable-next-line max-len
+            this.logger.error({
+              message: `shoppingListItem:create error ${obj2str(err)}`,
+            });
+            cb({
+              status: 'error',
+              message: err.message,
+            });
+          }
+        },
+      );
 
       socket.on('shoppingListItem:list', async (cb) => {
         if (typeof cb !== 'function') {
@@ -177,7 +176,7 @@ export class Server {
 
       socket.on(
         'shoppingListItem:update',
-        async (itemId: string, itemUpdate: Json, cb: any) => {
+        async (itemId: ItemId, itemUpdate: ItemUpdateInfo, cb) => {
           this.logger.info({
             // eslint-disable-next-line max-len
             message: `shoppingListItem:update itemId=${itemId} itemUpdate=${obj2str(
@@ -265,7 +264,7 @@ export class Server {
         },
       );
 
-      socket.on('shoppingListItem:read', async (itemId: string, cb) => {
+      socket.on('shoppingListItem:read', async (itemId: ItemId, cb) => {
         this.logger.info({ message: `shoppingListItem:read itemId=${itemId}` });
 
         if (typeof cb !== 'function') {

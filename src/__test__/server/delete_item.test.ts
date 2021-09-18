@@ -5,7 +5,6 @@ describe('Server', () => {
     });
 
     it.skip('disconnects if a callback is missing', () => {
-      // ToDo! Add reason test here
       expect(false).toBe(true);
     });
 
