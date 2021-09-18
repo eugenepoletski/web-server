@@ -242,13 +242,25 @@ export class Server {
               },
             });
           } catch (err) {
-            this.logger.error({
-              message: `shoppingListItem:update error ${obj2str(err)}`,
-            });
-            cb({
-              status: 'error',
-              message: err.message,
-            });
+            switch (true) {
+              case err instanceof this.shoppingListService.NotFoundError:
+                const reason = { itemId: `item with id=${itemId} not found` };
+                this.logger.warn(
+                  `shoppingListItem:update fail reason=${obj2str(reason)}`,
+                );
+                return cb({
+                  status: 'fail',
+                  payload: reason,
+                });
+              default:
+                this.logger.error({
+                  message: `shoppingListItem:update error ${obj2str(err)}`,
+                });
+                cb({
+                  status: 'error',
+                  message: err.message,
+                });
+            }
           }
         },
       );

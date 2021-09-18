@@ -145,8 +145,32 @@ describe('Server', () => {
       );
     });
 
-    it.skip(`rejects to read an item if not found and reports a reason`, () => {
-      expect(false).toBe(true);
+    it(`rejects to update an item if not found and reports a reason`, (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      const dummyItemUpdate = { title: faker.lorem.sentence().slice(0, 50) };
+      jest
+        .spyOn(mockedShoppingListService, 'validateItemUpdate')
+        .mockImplementationOnce(() => Promise.resolve({}));
+      jest
+        .spyOn(mockedShoppingListService, 'updateItem')
+        .mockImplementationOnce(() =>
+          Promise.reject(
+            new mockedShoppingListService.NotFoundError(faker.lorem.sentence()),
+          ),
+        );
+
+      clientSocket.emit(
+        'shoppingListItem:update',
+        dummyItemId,
+        dummyItemUpdate,
+        (response) => {
+          expect(response.status).toBe('fail');
+          expect(response.payload).toMatchObject({
+            itemId: expect.any(String),
+          });
+          done();
+        },
+      );
     });
 
     it('reports an error if an unexpected error occured', (done) => {

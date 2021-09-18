@@ -20,7 +20,7 @@ describe('Server', () => {
       clientSocket.close();
     });
 
-    it('successfully creates a valid item', (done) => {
+    it('successfully creates an item', (done) => {
       const dummyItemInfo = {
         title: faker.lorem.words(3).slice(0, 50),
         completed: faker.datatype.boolean(),
