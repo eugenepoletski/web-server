@@ -31,6 +31,18 @@ export interface ValidationReport {
   };
 }
 
+export const handleSuccess = (data, cb): void => {
+  cb({ status: 'success', payload: data });
+};
+
+export const handleFail = (reason, cb): void => {
+  cb({ status: 'fail', payload: reason });
+};
+
+export const handleError = (err, cb): void => {
+  cb({ status: 'error', message: err.message });
+};
+
 export interface Service {
   createItem(newItemInfo: NewItemInfo): Promise<Item | never>;
   updateItem(itemId: ItemId, itemUpdate: ItemUpdateInfo): Promise<Item | never>;
@@ -107,10 +119,7 @@ export class Server {
               )}`,
             });
 
-            return cb({
-              status: 'fail',
-              payload: validationReport.error.errors,
-            });
+            handleFail(validationReport.error.errors, cb);
           }
 
           try {
@@ -122,23 +131,22 @@ export class Server {
             this.logger.info({
               message: `shoppingListItem:create success item=${obj2str(item)}`,
             });
-            cb({
-              status: 'success',
-              payload: {
+
+            handleSuccess(
+              {
                 id: item.id,
                 title: item.title,
                 completed: item.completed,
               },
-            });
+              cb,
+            );
           } catch (err: any) {
             // eslint-disable-next-line max-len
             this.logger.error({
               message: `shoppingListItem:create error ${obj2str(err)}`,
             });
-            cb({
-              status: 'error',
-              message: err.message,
-            });
+
+            handleError(err, cb);
           }
         },
       );
@@ -149,6 +157,7 @@ export class Server {
           this.logger.debug({
             message: 'shoppingListItem:list missing callback',
           });
+
           return socket.disconnect();
         }
 
@@ -158,19 +167,15 @@ export class Server {
           this.logger.info({
             message: `shoppingListItem:list success items=${obj2str(itemList)}`,
           });
-          cb({
-            status: 'success',
-            payload: itemList,
-          });
+
+          handleSuccess(itemList, cb);
         } catch (err) {
           // eslint-disable-next-line max-len
           this.logger.error({
             message: `shoppingListItem:list error ${obj2str(err)}`,
           });
-          cb({
-            status: 'error',
-            message: err.message,
-          });
+
+          handleError(err, cb);
         }
       });
 
@@ -188,6 +193,7 @@ export class Server {
             this.logger.debug({
               message: 'shoppingListItem:update missing callback',
             });
+
             return socket.disconnect();
           }
 
@@ -195,12 +201,8 @@ export class Server {
             this.logger.warn({
               message: `shoppingListItem:update invalid itemId=${itemId}`,
             });
-            return cb({
-              status: 'fail',
-              payload: {
-                itemId: `invalid itemId=${itemId}`,
-              },
-            });
+
+            return handleFail({ itemId: `invalid itemId=${itemId}` }, cb);
           }
 
           const validationReport =
@@ -213,10 +215,7 @@ export class Server {
               )}`,
             );
 
-            return cb({
-              status: 'fail',
-              payload: validationReport.error.errors,
-            });
+            return handleFail(validationReport.error.errors, cb);
           }
 
           try {
@@ -232,14 +231,14 @@ export class Server {
               )}`,
             });
 
-            cb({
-              status: 'success',
-              payload: {
+            handleSuccess(
+              {
                 id: updatedItem.id,
                 title: updatedItem.title,
                 completed: updatedItem.completed,
               },
-            });
+              cb,
+            );
           } catch (err) {
             switch (true) {
               case err instanceof this.shoppingListService.NotFoundError:
@@ -247,18 +246,15 @@ export class Server {
                 this.logger.warn(
                   `shoppingListItem:update fail reason=${obj2str(reason)}`,
                 );
-                return cb({
-                  status: 'fail',
-                  payload: reason,
-                });
+
+                return handleFail(reason, cb);
+
               default:
                 this.logger.error({
                   message: `shoppingListItem:update error ${obj2str(err)}`,
                 });
-                cb({
-                  status: 'error',
-                  message: err.message,
-                });
+
+                handleError(err, cb);
             }
           }
         },
@@ -271,6 +267,7 @@ export class Server {
           this.logger.debug({
             message: 'shoppingListItem:read missing callback',
           });
+
           return socket.disconnect();
         }
 
@@ -278,12 +275,8 @@ export class Server {
           this.logger.warn({
             message: `shoppingListItem:read invalid itemId=${itemId}`,
           });
-          return cb({
-            status: 'fail',
-            payload: {
-              itemId: `invalid itemId=${itemId}`,
-            },
-          });
+
+          return handleFail({ itemId: `invalid itemId=${itemId}` }, cb);
         }
 
         try {
@@ -294,10 +287,7 @@ export class Server {
             message: `shoppingListItem:read success item=${obj2str(item)}`,
           });
 
-          cb({
-            status: 'success',
-            payload: item,
-          });
+          handleSuccess(item, cb);
         } catch (err) {
           switch (true) {
             case err instanceof this.shoppingListService.NotFoundError:
@@ -305,18 +295,15 @@ export class Server {
               this.logger.warn(
                 `shoppingListItem:read fail reason=${obj2str(reason)}`,
               );
-              return cb({
-                status: 'fail',
-                payload: reason,
-              });
+
+              return handleFail(reason, cb);
+
             default:
               this.logger.error({
                 message: `shoppingListItem:read error ${obj2str(err)}`,
               });
-              cb({
-                status: 'error',
-                message: err.message,
-              });
+
+              handleError(err, cb);
           }
         }
       });
