@@ -1,4 +1,4 @@
-import { mockedLogger, MockedShoppingListService } from '../../__mocks__';
+import { mockedLogger, MockedShoppingListService } from '../../__mock__';
 import { Server, Service } from '../../server';
 
 export const mockedShoppingListService = new MockedShoppingListService();

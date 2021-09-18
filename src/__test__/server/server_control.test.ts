@@ -1,6 +1,6 @@
 import { AddressInfo } from 'net';
 import { Server, Service } from '../../server';
-import { mockedLogger, MockedShoppingListService } from '../../__mocks__';
+import { mockedLogger, MockedShoppingListService } from '../../__mock__';
 
 describe('Server', () => {
   let server;
