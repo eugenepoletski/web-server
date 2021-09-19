@@ -3,6 +3,7 @@ import Client from 'socket.io-client';
 import faker from 'faker';
 import { server, mockedShoppingListService } from './test_setup';
 import { createPartialDone } from '../test_helpers';
+import { ShoppingListService } from '../../services/shoppingList';
 
 describe('Server', () => {
   describe('delete an item', () => {
@@ -72,13 +73,40 @@ describe('Server', () => {
       });
     });
 
-    it.skip(`rejects to delete an item if not found
-      and reports a reason`, () => {
-      expect(false).toBe(true);
+    it(`rejects to delete an item if not found and reports a reason`, (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      jest
+        .spyOn(mockedShoppingListService, 'deleteItem')
+        .mockImplementationOnce(() =>
+          Promise.reject(
+            new mockedShoppingListService.NotFoundError(faker.lorem.sentence()),
+          ),
+        );
+
+      clientSocket.emit('shoppingListItem:delete', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({
+          itemId: expect.any(String),
+        });
+        done();
+      });
     });
 
-    it.skip('reports an error if an unexpected error occured', () => {
-      expect(false).toBe(true);
+    it('reports an error if an unexpected error occured', (done) => {
+      const dummyItemId = faker.datatype.uuid();
+      jest
+        .spyOn(mockedShoppingListService, 'deleteItem')
+        .mockImplementationOnce(() =>
+          Promise.reject(new Error(faker.lorem.sentence())),
+        );
+
+      clientSocket.emit('shoppingListItem:delete', dummyItemId, (response) => {
+        expect(response.status).toBe('error');
+        expect(response).toMatchObject({
+          message: expect.any(String),
+        });
+        done();
+      });
     });
   });
 });

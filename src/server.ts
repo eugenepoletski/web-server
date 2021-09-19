@@ -319,9 +319,35 @@ export class Server {
           return handleFail({ itemId: `invalid itemId=${itemId}` }, cb);
         }
 
-        this.shoppingListService.deleteItem(itemId);
+        try {
+          const deletedItem = await this.shoppingListService.deleteItem(itemId);
 
-        handleSuccess({}, cb);
+          this.logger.info({
+            // eslint-disable-next-line max-len
+            message: `shoppingListItem:delete success item=${obj2str(
+              deletedItem,
+            )}`,
+          });
+
+          handleSuccess({}, cb);
+        } catch (err) {
+          switch (true) {
+            case err instanceof this.shoppingListService.NotFoundError:
+              const reason = { itemId: `item with id=${itemId} not found` };
+              this.logger.warn(
+                `shoppingListItem:delete fail reason=${obj2str(reason)}`,
+              );
+
+              return handleFail(reason, cb);
+
+            default:
+              this.logger.error({
+                message: `shoppingListItem:delete error ${obj2str(err)}`,
+              });
+
+              handleError(err, cb);
+          }
+        }
       });
     });
   }
