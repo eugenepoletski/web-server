@@ -311,6 +311,14 @@ export class Server {
           return socket.disconnect();
         }
 
+        if (!itemId) {
+          this.logger.warn({
+            message: `shoppingListItem:delete invalid itemId=${itemId}`,
+          });
+
+          return handleFail({ itemId: `invalid itemId=${itemId}` }, cb);
+        }
+
         this.shoppingListService.deleteItem(itemId);
 
         handleSuccess({}, cb);

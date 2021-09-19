@@ -2,6 +2,7 @@ import { AddressInfo } from 'net';
 import Client from 'socket.io-client';
 import faker from 'faker';
 import { server, mockedShoppingListService } from './test_setup';
+import { createPartialDone } from '../test_helpers';
 
 describe('Server', () => {
   describe('delete an item', () => {
@@ -45,9 +46,30 @@ describe('Server', () => {
       });
     });
 
-    it.skip(`rejects to delete an item if its id is missing
-      and reports a reason`, () => {
-      expect(false).toBe(true);
+    it(`rejects to delete an item if its id is missing
+      and reports a reason`, (done) => {
+      const partialDone = createPartialDone(3, done);
+      let dummyItemId = undefined;
+
+      clientSocket.emit('shoppingListItem:delete', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({ itemId: expect.any(String) });
+        partialDone();
+      });
+
+      dummyItemId = null;
+      clientSocket.emit('shoppingListItem:delete', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({ itemId: expect.any(String) });
+        partialDone();
+      });
+
+      dummyItemId = '';
+      clientSocket.emit('shoppingListItem:delete', dummyItemId, (response) => {
+        expect(response.status).toBe('fail');
+        expect(response.payload).toMatchObject({ itemId: expect.any(String) });
+        partialDone();
+      });
     });
 
     it.skip(`rejects to delete an item if not found
