@@ -2,6 +2,7 @@ import { createServer, Server as HttpServer } from 'http';
 import { AddressInfo } from 'net';
 import { Server as IOServer, Socket } from 'socket.io';
 import { inspect } from 'util';
+import { handleSuccess, handleFail, handleError } from './server/helpers';
 
 export type ItemId = string;
 
@@ -30,18 +31,6 @@ export interface ValidationReport {
     };
   };
 }
-
-export const handleSuccess = (data, cb): void => {
-  cb({ status: 'success', payload: data });
-};
-
-export const handleFail = (reason, cb): void => {
-  cb({ status: 'fail', payload: reason });
-};
-
-export const handleError = (err, cb): void => {
-  cb({ status: 'error', message: err.message });
-};
 
 export interface Service {
   createItem(newItemInfo: NewItemInfo): Promise<Item | never>;
@@ -140,7 +129,7 @@ export class Server {
               },
               cb,
             );
-          } catch (err: any) {
+          } catch (err) {
             // eslint-disable-next-line max-len
             this.logger.error({
               message: `shoppingListItem:create error ${obj2str(err)}`,
