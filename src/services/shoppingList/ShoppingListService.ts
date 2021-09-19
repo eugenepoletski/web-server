@@ -132,6 +132,15 @@ export class ShoppingListService {
     return Promise.resolve(updatedItem);
   }
 
+  public async deleteItem(itemId: string): Promise<Item | never> {
+    const itemToDelete = await this.findItemById(itemId);
+    const nextItems = this.items.filter((item) => {
+      return item.id !== itemToDelete.id;
+    });
+    this.items = nextItems;
+    return Promise.resolve(itemToDelete);
+  }
+
   public validateNewItem(newItemInfo: NewItemInfo): ValidationReport {
     const result = newItemSchema.validate(newItemInfo);
     return buildValidationReport(result);

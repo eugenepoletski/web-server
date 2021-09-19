@@ -1,11 +1,48 @@
+import { AddressInfo } from 'net';
+import Client from 'socket.io-client';
+import faker from 'faker';
+import { server, mockedShoppingListService } from './test_setup';
+
 describe('Server', () => {
   describe('delete an item', () => {
-    it.skip('successfully deletes an item', () => {
-      expect(false).toBe(true);
+    let clientSocket;
+
+    beforeEach(() => {
+      clientSocket = Client(
+        `http://localhost:${(server.address() as AddressInfo).port}`,
+      );
     });
 
-    it.skip('disconnects if a callback is missing', () => {
-      expect(false).toBe(true);
+    afterEach(() => {
+      jest.clearAllMocks();
+      jest.restoreAllMocks();
+      clientSocket.close();
+    });
+
+    it('successfully deletes an item', (done) => {
+      const dummyItem = {
+        id: faker.datatype.uuid(),
+        title: faker.lorem.sentence().slice(0, 50),
+        completed: faker.datatype.boolean(),
+      };
+      jest
+        .spyOn(mockedShoppingListService, 'deleteItem')
+        .mockImplementationOnce(() => Promise.resolve(dummyItem));
+
+      clientSocket.emit('shoppingListItem:delete', dummyItem.id, (response) => {
+        expect(response.status).toBe('success');
+        done();
+      });
+    });
+
+    it('disconnects if a callback is missing', (done) => {
+      const dummyItemId = faker.datatype.uuid();
+
+      clientSocket.emit('shoppingListItem:delete', dummyItemId);
+
+      clientSocket.on('disconnect', () => {
+        done();
+      });
     });
 
     it.skip(`rejects to delete an item if its id is missing

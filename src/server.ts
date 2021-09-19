@@ -37,6 +37,7 @@ export interface Service {
   updateItem(itemId: ItemId, itemUpdate: ItemUpdateInfo): Promise<Item | never>;
   findAll(): Promise<Item[] | never>;
   findItemById(itemId: ItemId): Promise<Item | never>;
+  deleteItem(itemId: ItemId): Promise<Item | never>;
   validateNewItem(newItemInfo: NewItemInfo): ValidationReport;
   validateItemUpdate(itemUpdateInfo: ItemUpdateInfo): ValidationReport;
   NotFoundError: any;
@@ -295,6 +296,24 @@ export class Server {
               handleError(err, cb);
           }
         }
+      });
+
+      socket.on('shoppingListItem:delete', async (itemId: ItemId, cb) => {
+        this.logger.info({
+          message: `shoppingListItem:delete itemId=${itemId}`,
+        });
+
+        if (typeof cb !== 'function') {
+          this.logger.debug({
+            message: 'shoppingListItem:delete missing callback',
+          });
+
+          return socket.disconnect();
+        }
+
+        this.shoppingListService.deleteItem(itemId);
+
+        handleSuccess({}, cb);
       });
     });
   }
